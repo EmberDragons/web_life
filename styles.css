@@ -1,0 +1,44 @@
+@font-face {
+    font-family: 'main_font';
+    src: url(fonts/fonts/Skqatterpillur.ttf);
+}
+@font-face {
+    font-family: 'sub_font';
+    src: url(fonts/fonts/AOUWobbleText-Bold.ttf);
+    font-style: bold;
+}   
+.title {
+    font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    color:black;
+}
+
+.important {
+    font-family:"main_font";
+    color : rgb(206, 20, 20);
+    font-size: 105%;
+}
+
+.subtext {
+    font-family:"sub_font";
+    color : rgb(209, 102, 21);
+    font-size: 120%;
+}
+
+.bullet_point {
+    font-size: 110%;
+    border: 2px black ;
+    border-radius: 10px;   
+    padding: 4px;
+    margin : 10px;
+}
+
+header {
+    border: 2px solid black;
+}
+
+body {
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: grey;
+}
+h1 {
+}
