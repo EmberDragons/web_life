@@ -7,9 +7,33 @@
     src: url(fonts/fonts/AOUWobbleText-Bold.ttf);
     font-style: bold;
 }   
-.title {
-    font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-    color:black;
+
+#small_tabbed_title {
+    position: relative;
+    tab-size: 50px;
+    left: 28%;
+}
+
+#tabbed_title {
+    position: relative;
+    tab-size: 100px;
+    font-size: 115%;
+    left: 40%;
+    bottom: 10px;
+}
+
+#end_page_pos{
+    width: 600px;
+    height: 300px;
+    padding: 10px;
+    margin-top: 400px;
+}
+
+
+.main_part {
+    font-family:"main_font";
+    color : rgb(228, 39, 127);
+    font-size: 110%;
 }
 
 .important {
@@ -24,21 +48,76 @@
     font-size: 120%;
 }
 
-.bullet_point {
-    font-size: 110%;
-    border: 2px black ;
-    border-radius: 10px;   
-    padding: 4px;
-    margin : 10px;
+
+.box {
+    width: 700px;
+    height: 230px;
+    padding: 10px;
+    margin-top: 30px;
+    margin-left: 60px;
+    border: #ba0f70 5px dashed;
+    border-radius: 10px;
+}
+.box2 {
+    width: 700px;
+    height: 170px;
+    margin-top: 30px;
+    margin-left: 60px;
+    padding: 10px;
+    border: #0fbab4 5px dashed;
+    border-radius: 10px;
 }
 
+.underline {
+    text-decoration:underline;
+    color : rgb(209, 102, 21);
+}
+.bullet_point {
+    font-size: 110%;
+    margin : 8px;
+}
+
+.bottomnav {
+    width: 100%;
+    height: 50px;
+    padding: 10px;
+    overflow: hidden;
+    background-color: rgb(31, 37, 38);
+}
+
+.bottomnav a {
+    color: #ded6d6;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+.topnav {
+    overflow: hidden;
+    background-color: rgb(31, 37, 38);
+}
+
+.topnav a {
+    float: left;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+.topnav a.split {
+    float:right;
+    color:rgb(255, 255, 255);
+    background-color: rgb(206, 9, 9);
+}
+
+
 header {
-    border: 2px solid black;
+    position: sticky;
 }
 
 body {
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: grey;
-}
-h1 {
 }
