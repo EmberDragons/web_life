@@ -7,7 +7,50 @@
     src: url(fonts/fonts/AOUWobbleText-Bold.ttf);
     font-style: bold;
 }   
+@keyframes zoom {
+    0% {
+        zoom: 100%;
+    }
+    100% {
+        zoom: 105%;
+    }
+}
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(5deg);
+    }
+}
+@keyframes move {
+    from {
+        transform: translateY(-5px);
+    }
+    to {
+        transform: translateY(5px);
+    }
+}
+@keyframes diseaper {
+    from {
+        opacity: 100%;
+    }
+    to {
+        opacity: 0%;
+    }
+}
 
+@keyframes font_color {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
 #small_tabbed_title {
     position: relative;
     tab-size: 50px;
@@ -24,11 +67,103 @@
 
 #end_page_pos{
     width: 600px;
-    height: 300px;
+    height: 150px;
     padding: 10px;
-    margin-top: 400px;
+    margin-top: 300px;
 }
 
+.input-box label {
+    position: absolute; 
+    left:171px;
+    opacity: 100%;
+    pointer-events: none;
+    transition: 0.6s;
+    transform: opacity(-50%);
+}
+
+.icon {
+    padding-left: 50px;
+    position:relative;
+    width:30px
+    ;top:10px;
+}
+
+input:placeholder-shown ~ label {
+opacity:100%;
+}
+
+.input-box input:focus ~label,
+input:not(:placeholder-shown) ~ label {
+    opacity:0%;
+}
+
+
+.input-box input {
+    width:165px; 
+    height:25px;
+    background-color: rgba(255, 255, 255, 0.679);
+    border: rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
+    font-family: "sub_font";
+    font-size: 80%;
+    color: grey;
+    padding: 0 35px 0 5px;
+}
+
+.remember-forgot label input{
+    accent-color: rgb(210, 15, 15);
+}
+
+.wrapper a {
+    text-decoration: none;
+}
+
+.wrapper a:hover {
+    text-decoration: underline;
+}
+
+.btn {
+    position: absolute;
+    background-color: grey;
+    right:100px;
+    top:230px;
+    height:35px;
+    width:80px;
+    border: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+}
+
+.wrapper {
+    font-family: "sub_font";
+    
+    position : relative;
+    width:400px;
+    height:370px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    backdrop-filter: blur(300px);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    margin: 30px;
+    padding: 20px;
+    padding-left: 80px;
+    display: flex;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.link{
+    color: #df0b0b;
+    font-size: 90%;
+}
+.gradient_anim {
+    animation: font_color 2s ease infinite;
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
 .main_part {
     font-family:"main_font";
@@ -48,9 +183,16 @@
     font-size: 120%;
 }
 
+.small_box {
+    width: 700px;
+    height: 400px;
+    padding: 10px;
+    margin-top: 30px;
+    margin-left: 60px;
+}
 
 .box {
-    width: 700px;
+    width: 720px;
     height: 230px;
     padding: 10px;
     margin-top: 30px;
@@ -64,7 +206,18 @@
     margin-top: 30px;
     margin-left: 60px;
     padding: 10px;
-    border: #0fbab4 5px dashed;
+    border: #ff3c2a 5px dashed;
+    border-radius: 10px;
+}
+.box3 {
+    font-style: italic;
+    width: 700px;
+    height: 184px;
+    margin-top: 30px;
+    margin-left: 80px;
+    padding: 10px;
+    padding-left: 40px;
+    border: #606a69 5px dashed;
     border-radius: 10px;
 }
 
@@ -104,13 +257,50 @@
     padding: 14px 16px;
     text-decoration: none;
     font-size: 17px;
+    transition: 0.5s;
 }
+
+.topnav a:hover {
+    animation: rotate reverse 0.5s;
+    color: rgb(206, 9, 9);
+    background-color: rgb(26, 32, 33);
+    font-size: 19px;
+}
+
+/*.topnav a:active {
+    transition: 0.5s;
+    color: rgb(31, 37, 38);
+    background-color: #f2f2f2;
+    font-size: 19px;
+}*/
 
 .topnav a.split {
     float:right;
     color:rgb(255, 255, 255);
+}
+.topnav a.split_log:hover {
+    animation: zoom 1s;
+    animation-fill-mode: forwards;  
+    color: rgb(206, 9, 9);
+    background-color: rgb(26, 32, 33);
+    font-size: 19px;
+}
+.topnav a.split_log {
+    float:right;
+    color:rgb(255, 255, 255);
     background-color: rgb(206, 9, 9);
 }
+
+.color_bar {
+    padding: 70px 0;
+    height: 50px;
+    background: rgb(23, 28, 29);
+}
+
+.move_up_down{
+    animation: move 1.5s infinite alternate;
+}
+
 
 
 header {
@@ -118,6 +308,12 @@ header {
 }
 
 body {
+    min-height: 100vh;
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: grey;
+}
+
+html {
+    background: url(img/background.svg) no-repeat center center; 
+    background-size: cover;
 }
