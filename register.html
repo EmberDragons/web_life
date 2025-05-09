@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html style = "font-size:150%">
     <link rel="stylesheet" href="styles.css">
+    <script rel="text/javascript" src="script.js"> </script>
     <title> Web Life - Log In </title> 
     <header>
         <div class="topnav">
@@ -15,22 +16,28 @@
         <br><br>
         <div class = "wrapper">
             <div class="form-box register">
-                <center><h2 style="position:relative; font-family:'main_font'; right:12px"> Register </h2></center>
+                <center><h2 style="font-family:'main_font';"> Register </h2></center>
                 <form action="#">
                     <div class = "input-box">
-                        <img class="icon" src = "https://icons.hackclub.com/api/icons/grey/email-fill" style="position:relative;width:30px;top:10px;">
-                        <input type="email">
-                        <label>Email</label>
+                        <img class="icon" src = "https://icons.hackclub.com/api/icons/grey/sam">
+                        <input id="name_input" placeholder="">
+                        <label style="top:131px">Pseudonym</label>
                     </div>
                     <div class = "input-box">
-                        <img class="icon" src = "https://icons.hackclub.com/api/icons/grey/private" style="position:relative;width:30px;top:10px;">
-                        <input type="password">
-                        <label>Password</label>
+                        <img class="icon" src = "https://icons.hackclub.com/api/icons/grey/email-fill">
+                        <input id="mail_input" type="email" placeholder="">
+                        <label style="top:168px">Email</label>
                     </div>
-                    <button type="submit" class="btn">Sign up</button>
+                    <div class = "input-box">
+                        <img class="icon" src = "https://icons.hackclub.com/api/icons/grey/private">
+                        <input id="password_input" type="password" placeholder="">
+                        <label style="top:206px">Password</label>
+                        <button class="look" onclick="passwordShow()"> <img id="show_password_inactive" src="https://icons.hackclub.com/api/icons/grey/view"> </button>
+                    </div>
+                    <button type="submit" class="btn2" onclick="submitRegister()">Sign up</button>
                 </form>
                 <br><br><br><br>
-                <div style="font-family:'main_font';">already have an account? <a href="login.html" class="link"> Login </a></div> 
+                <div style="font-family:'main_font'; font-size: 20px;">already have an account? <a href="login.html" class="link"> Login </a></div> 
             </div>
         </div>
         <br><br><br><br><br><br><br><br><br>

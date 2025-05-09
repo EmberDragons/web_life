@@ -23,12 +23,28 @@
         transform: rotate(5deg);
     }
 }
+@keyframes rotate_360 {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
 @keyframes move {
     from {
         transform: translateY(-5px);
     }
     to {
         transform: translateY(5px);
+    }
+}
+@keyframes move_up {
+    from {
+        transform: translateY(0px);
+    }
+    to {
+        transform: translateY(-2px);
     }
 }
 @keyframes diseaper {
@@ -84,9 +100,54 @@
 .icon {
     padding-left: 50px;
     position:relative;
-    width:30px
-    ;top:10px;
+    width:30px;
+    top:10px;
 }
+
+.look {
+    position: relative;
+    top:6px;
+    right:30px;
+    width:20px;
+    height:20px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border: rgb(0, 0, 0);
+    border-radius: 5px;
+}
+
+.look:hover {
+    transition-duration: 0.5s;
+    background-color:rgba(77, 82, 77, 0.4);
+}
+
+#show_password_inactive:hover {
+    cursor: pointer;
+    content: url(https://icons.hackclub.com/api/icons/white/view);
+}
+
+
+#show_password_inactive{
+    position: relative;
+    width:20px;
+    bottom:1px;
+    right:6px;
+    transition: 1s;
+}
+
+#show_password_active:hover {
+    cursor: pointer;
+    content: url(https://icons.hackclub.com/api/icons/white/private-fill);
+}
+
+
+#show_password_active{
+    position: relative;
+    width:20px;
+    bottom:1px;
+    right:6px;
+    transition: 1s;
+}
+
 
 input:placeholder-shown ~ label {
 opacity:100%;
@@ -97,10 +158,20 @@ input:not(:placeholder-shown) ~ label {
     opacity:0%;
 }
 
-
 .input-box input {
     width:165px; 
     height:25px;
+    background-color: rgba(255, 255, 255, 0.679);
+    border: rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
+    font-family: "sub_font";
+    font-size: 80%;
+    color: grey;
+    padding: 0 35px 0 5px;
+}
+
+.input-box input look {
+    width:15px; 
     background-color: rgba(255, 255, 255, 0.679);
     border: rgba(0, 0, 0, 0.5);
     border-radius: 3px;
@@ -125,13 +196,42 @@ input:not(:placeholder-shown) ~ label {
 .btn {
     position: absolute;
     background-color: grey;
-    right:100px;
+    right:130px;
     top:230px;
     height:35px;
     width:80px;
     border: rgba(0, 0, 0, 0.2);
     border-radius: 5px;
     color: rgb(255, 255, 255);
+    transition: .8s;
+}
+
+.btn:hover {
+    animation: move_up 1s forwards;
+    cursor: pointer;
+    color:#df0b0b;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+}
+.btn2:hover {
+    animation: move_up 1s forwards;
+    cursor: pointer;
+    color:#df0b0b;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+}
+
+.btn2 {
+    position: absolute;
+    background-color: grey;
+    right:130px;
+    top:250px;
+    height:35px;
+    width:80px;
+    border: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    color: rgb(255, 255, 255);
+    transition: .8s;
 }
 
 .wrapper {

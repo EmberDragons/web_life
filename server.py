@@ -1,0 +1,154 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import sqlite3, random
+
+app = Flask(__name__)
+CORS(app)  # This will enable CORS for all routes
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    mail = data.get('mail')
+    password = data.get('password')
+    # Call your Python function here
+    result = checkLogIn(mail, password)
+    return jsonify({'result': result})
+
+def checkLogIn(mail, password):
+    returned_val=""
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT * FROM users WHERE (users.mail='{mail}' and users.password='{password}')"
+    cur.execute(req)
+
+    returned_val=[]
+    for elt in cur:
+        returned_val.append(elt)
+    cur.close()
+    conn.close()
+
+    if returned_val == []:
+        return f"Error-not_in_data_base"
+    else:
+        return f"{returned_val[0][5]}"
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    name = data.get('name')
+    mail = data.get('mail')
+    password = data.get('password')
+    # Call your Python function here
+    result = checkRegister(name, mail, password)
+    return jsonify({'result': result})
+
+def checkRegister(name, mail, password):
+    conn = sqlite3.connect('databases/profile_database.db')
+
+    new_cur = conn.cursor()
+    req_server = (
+        f"SELECT * FROM users WHERE mail = '{mail}';"
+    )
+    new_cur.execute(req_server)
+
+    returned_val=[]
+    for elt in new_cur:
+        returned_val.append(elt)
+    new_cur.close()
+
+
+    if returned_val != []:
+        conn.close()
+        return f"Error-already_in_database"
+    else:
+        cur = conn.cursor()
+        
+        database_codes = getDatabaseCodes()
+        generated_key = generateKey()
+        while generated_key in database_codes:
+            generated_key = generateKey()
+
+
+        req = (
+            f"INSERT INTO users VALUES ('{name}','{mail}','{password}',0,'0,0','{generated_key}');"
+        )
+        cur.execute(req)
+        conn.commit()  # <-- saving changes
+        cur.close()
+
+        conn.close()
+        return f"worked"
+
+@app.route('/communicate', methods=['POST'])
+def communicate():
+    data = request.get_json()
+    id = data.get('id')
+    # Call your Python function here
+    result = Communicate(id)
+    return jsonify({'result': result})
+
+def Communicate(id):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT server_id FROM users WHERE id_password='{id}'"
+    cur.execute(req)
+
+    server_id = None
+    for elt in cur:
+        server_id=elt[0]
+    cur.close()
+    
+    if server_id != None:
+        new_cur = conn.cursor()
+        
+        req_server=f"SELECT * FROM users WHERE server_id='{server_id}'"
+        new_cur.execute(req_server)
+
+        pers_in_server = []
+        for elt in new_cur:
+            pers_in_server.append(elt)
+        new_cur.close()
+        conn.close()
+
+        return f"{pers_in_server}"
+    else:
+        conn.close()
+        return f"Error-idpassword incorrect"
+
+
+def getDatabaseCodes():
+    codes=[]
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT id_password FROM users"
+    cur.execute(req)
+
+    for elt in cur:
+        codes.append(elt)
+    cur.close()
+    conn.close()
+    return codes
+
+def generateKey():
+    numbers = [1,2,3,4,5,6,7,8,9]
+    alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    list_rand_letters = [random.randint(0,len(alphabet)-1) for _ in range(10)]
+    list_rand_numbers = [random.randint(0,len(numbers)-1) for _ in range(5)]
+    print(list_rand_letters, list_rand_numbers)
+    code=""
+    for elt in list_rand_letters:
+        code+=alphabet[elt]
+    for num in list_rand_numbers:
+        code+=str(numbers[num])
+    
+    return code
+
+if __name__ == '__main__':
+
+    app.run(debug=True)
+
+
