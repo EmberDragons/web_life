@@ -1,13 +1,45 @@
 var password_state = false;
 
-var id_password;
+var infos;
+
+var name_pseudo;
+var mail;
+var password;
 var server_id;
+var position;
+var id_password;
 
 
-var s_mail;
-var s_password;
+//cookies XD
 
-setInterval(function(){communicate()},1000);
+function retrieveInfos() {
+    id_password=document.cookie.replace("id_password=","").replace(";","");
+    if (!id_password) {
+        console.error("id_password cookie not found");
+        return;
+    }
+    communicate_get();
+}
+
+
+//setInterval(function(){communicate()},1000);
+
+
+window.addEventListener("load", (event) => {
+    if (document.cookie != ""){
+        retrieveInfos();
+    }
+    else{
+        setLogin();
+    }
+});
+
+function setProfile() {
+    document.getElementById("profile").innerHTML="<img src='https://icons.hackclub.com/api/icons/white/profile-fill' style='position: relative; top:4px; height:22px; overflow: hidden;'>"+name_pseudo;
+}
+function setLogin() {
+    document.getElementById("profile").innerHTML="<img src='https://icons.hackclub.com/api/icons/white/profile-fill' style='position: relative; top:4px; height:22px; overflow: hidden;'>"+"Log In";
+}
 
 function passwordShow() {
     if (password_state == true) {
@@ -44,12 +76,22 @@ function submitLogin() {
     .then(response => response.json())
     .then(data => {
         if (data.result == "Error-not_in_data_base"){
-            alert('Error : Mail or Password incorrect');
+            alert('Error : This mail is not linked to an account');
+            open("register.html");
+            console.error(data.result);
+        }
+        else if (data.result == "Error-password_incorrect"){
+            alert('Error : Password incorrect');
             console.error(data.result);
         }
         else{
             id_password = data.result;
-            console.log(data.result);
+            var expiration_date=new Date(Date.now()+20*1000);
+            document.cookie = `id_password=${id_password}; ${expiration_date}`;
+            alert(document.cookie);
+            retrieveInfos();
+            setProfile();
+            open('profile.html')
         }
 
     })
@@ -77,15 +119,11 @@ function submitRegister() {
     .then(response => response.json())
     .then(data => {
         if (data.result == "Error-already_in_database"){
-            alert("email already used")
+            alert("email already used");
             console.error(data.result);
         }
         else{
-            s_mail = mail;
-            s_password = password;
             open("login.html");
-            document.getElementById('mail_input').ariaPlaceholder = s_mail;
-            document.getElementById('password_input').ariaPlaceholder = s_password;
             console.log(data.result);
         }
 
@@ -96,7 +134,7 @@ function submitRegister() {
 }
 
 
-function communicate() {
+function communicate_get() {
     if (id_password != undefined){
         //send to the database the id_password
         fetch('http://localhost:5000/communicate', {
@@ -112,8 +150,15 @@ function communicate() {
                 console.error(data.result, id_password);
             }
             else{
-                server_id = data.result;
-                console.log(data.result);
+                let str_res =data.result.replace('(','').replace(')','').replace("'",'');
+                infos=str_res.split(",");
+                console.log(str_res);
+                name_pseudo = infos[0];
+                mail = infos[1];
+                password = infos[2];
+                server_id = infos[3];
+                position = (infos[4],infos[5]);
+                setProfile();
             }
 
         })

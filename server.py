@@ -16,23 +16,35 @@ def login():
     return jsonify({'result': result})
 
 def checkLogIn(mail, password):
-    returned_val=""
     conn = sqlite3.connect('databases/profile_database.db')
     cur = conn.cursor()
     
-    req=f"SELECT * FROM users WHERE (users.mail='{mail}' and users.password='{password}')"
+    req=f"SELECT * FROM users WHERE (users.mail='{mail}')"
     cur.execute(req)
 
     returned_val=[]
     for elt in cur:
         returned_val.append(elt)
     cur.close()
-    conn.close()
 
     if returned_val == []:
+        conn.close()
         return f"Error-not_in_data_base"
     else:
-        return f"{returned_val[0][5]}"
+        cur = conn.cursor()
+    
+        req=f"SELECT * FROM users WHERE (users.mail='{mail}' and users.password='{password}')"
+        cur.execute(req)
+
+        returned_val=[]
+        for elt in cur:
+            returned_val.append(elt)
+        cur.close()
+        conn.close()
+        if returned_val == []:
+            return "Error-password_incorrect"
+        else:
+            return f"{returned_val[0][6]}"
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -72,7 +84,7 @@ def checkRegister(name, mail, password):
 
 
         req = (
-            f"INSERT INTO users VALUES ('{name}','{mail}','{password}',0,'0,0','{generated_key}');"
+            f"INSERT INTO users VALUES ('{name}','{mail}','{password}',0,'0','0','{generated_key}');"
         )
         cur.execute(req)
         conn.commit()  # <-- saving changes
@@ -93,29 +105,19 @@ def Communicate(id):
     conn = sqlite3.connect('databases/profile_database.db')
     cur = conn.cursor()
     
-    req=f"SELECT server_id FROM users WHERE id_password='{id}'"
+    req=f"SELECT name,mail,password,server_id,position_x,position_y FROM users WHERE id_password='{id}'"
     cur.execute(req)
 
-    server_id = None
+    all_infos = ""
     for elt in cur:
-        server_id=elt[0]
+        all_infos+=str(elt)
     cur.close()
-    
-    if server_id != None:
-        new_cur = conn.cursor()
-        
-        req_server=f"SELECT * FROM users WHERE server_id='{server_id}'"
-        new_cur.execute(req_server)
 
-        pers_in_server = []
-        for elt in new_cur:
-            pers_in_server.append(elt)
-        new_cur.close()
-        conn.close()
-
-        return f"{pers_in_server}"
+    conn.close()
+    if all_infos != []:
+        str_info = str(all_infos).replace('[','').replace(']','').replace('(','').replace(')','').replace("'",'')
+        return f"{str_info}"
     else:
-        conn.close()
         return f"Error-idpassword incorrect"
 
 
