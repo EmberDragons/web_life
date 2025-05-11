@@ -374,12 +374,15 @@ input:not(:placeholder-shown) ~ label {
     font-size: 19px;
 }*/
 
+
 .topnav a.split {
+    cursor: pointer;
     float:right;
     color:rgb(255, 255, 255);
 }
 .topnav a.split_log:hover {
     animation: zoom 1s;
+    cursor: pointer;
     animation-fill-mode: forwards;  
     color: rgb(206, 9, 9);
     background-color: rgb(26, 32, 33);
@@ -401,6 +404,89 @@ input:not(:placeholder-shown) ~ label {
     animation: move 1.5s infinite alternate;
 }
 
+.profile_name{
+    margin:10px;
+    font-family:'sub_font';
+    color:#383838;
+    position: absolute;
+    left:90px;
+    top:42px;
+}
+
+.profile_password{
+    margin:10px;
+    font-family:'sub_font';
+    color:#000000;
+    position: absolute;
+    left:100px;
+    top:135px;
+}
+
+.profile_password_icon{
+    width:35px;
+    position: absolute;
+    left:75px;
+    top:135px;
+}
+
+
+.profile_button{
+    background-color: rgb(33, 39, 40);
+    position: absolute;
+    right:50px;
+    padding-left: 5px;
+    align-items: center;
+    font-size: 14px;
+    border: none;
+    border-radius: 15px;
+    top:60px;
+    transition: 0.4s;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+}
+
+.profile_name_image:hover{ 
+    content:url(https://icons.hackclub.com/api/icons/grey/edit);
+}
+.save_profile:hover{ 
+    content:url(https://icons.hackclub.com/api/icons/grey/post);
+}
+
+.profile_button:hover{
+    cursor:pointer;
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+}
+
+
+.profile_mail{
+    position: absolute;
+    font-family:'main_font';
+    font-size: 18px;
+    bottom:260px;
+    text-decoration: underline;
+}
+.profile_server{
+    color:#a80404;
+    font-family:'sub_font';
+    font-style: italic;
+    position: relative;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    padding-right: 30px;
+}
+
+
+
+.background_color{
+    z-index: -999;
+    position:absolute;
+    left:0px;
+    top:30px;
+    background-color: #ffffff;
+    width:500px;
+    height:140px;
+}
 
 
 header {

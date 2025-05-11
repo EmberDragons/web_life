@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html style = "font-size:150%">
+    <!--- python -m http.server 8000 --->
     <link rel="stylesheet" href="styles.css">
     <script rel="text/javascript" src="script.js"></script>
     <title> Web Life </title> 
@@ -9,8 +10,8 @@
             <a class="active" href="#home">Create Server</a>
             <a class="active" href="server_selection.html">Join Server</a>
             <a href="about.html" class="active">About</a>
-            <a class="split_log" href="login.html" id="profile"></a>
-          </div>
+            <a class="split_log" onclick="openProfile()" id="profile"></a>
+        </div>
     </header>
     <body> 
         <h1 style = "font-size:170%"> <span id = "small_tabbed_title"> This site is made for <span class = "subtext"> you </span> </span> <br> 

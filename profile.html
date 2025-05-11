@@ -9,33 +9,19 @@
             <a class="active" href="#home">Create Server</a>
             <a class="active" href="server_selection.html">Join Server</a>
             <a href="about.html" class="active">About</a>
-            <a class="split_log" href="login.html" id="profile"></a>
-          </div>
+            <a class="split_log" onclick="openProfile()" id="profile"></a>
+        </div>
     </header>
     <body>
         <br><br>
         <div class = "wrapper">
-            <div class="form-box login">
-                <center><h2 style="font-family:'main_font';"> Login </h2></center>
-                <form action="#">
-                    <div class = "input-box">
-                        <img class="icon" src = "https://icons.hackclub.com/api/icons/grey/email-fill">
-                        <input id="mail_input" type="email" placeholder="">
-                        <label style="top:132px">Email</label>
-                    </div>
-                    <div class = "input-box">
-                        <img class="icon" src = "https://icons.hackclub.com/api/icons/grey/private">
-                        <input id="password_input" type="password" placeholder="">
-                        <label style="top:168px">Password</label>
-                        <button class="look" onclick="passwordShow()"> <img id="show_password_inactive" src="https://icons.hackclub.com/api/icons/grey/view"> </button>
-                    </div>
-                    <div class = "remember-forgot">
-                        <a href="#" style="position: relative; font-size: 60%; left:92px;" target="_blank" class="link"> Forgot Password?</a>
-                    </div>
-                    <button type="submit" class="btn" onclick="submitLogin()">Sign in</button>
-                </form>
-                <br><br><br>
-                <div style="font-family:'main_font'; font-size: 20px;">don't have an account? <a href="register.html" class="link"> Register </a></div> 
+            <div class="background_color"></div>
+            <div id="modifie_profile">
+                <img src="https://icons.hackclub.com/api/icons/grey/profile-fill" style="position:absolute; left: 35px; top:38px; width:60px"> 
+                <h2 class="profile_name" id="profile_name">  Name</h2>
+                <button class="profile_button" onclick="setProfileModifie()"> <img class="profile_name_image" src="https://icons.hackclub.com/api/icons/white/edit" style="width:45px;"></button> 
+                <p class="profile_mail" id="profile_mail"> mail@gmail.com </p>
+                <p class="profile_server" id ="profile_server"> Server 0 </p>
             </div>
         </div>
         <br><br><br><br><br><br><br><br><br>

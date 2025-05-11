@@ -34,12 +34,81 @@ window.addEventListener("load", (event) => {
     }
 });
 
+
 function setProfile() {
     document.getElementById("profile").innerHTML="<img src='https://icons.hackclub.com/api/icons/white/profile-fill' style='position: relative; top:4px; height:22px; overflow: hidden;'>"+name_pseudo;
+    if (document.getElementById("profile_name")!=null){
+        document.getElementById("profile_name").innerHTML=name_pseudo;
+    }
+    if (document.getElementById("profile_mail")!=null){
+        document.getElementById("profile_mail").innerHTML=mail;
+    }
+    if (document.getElementById("profile_server")!=null){
+        document.getElementById("profile_server").innerHTML="Server "+server_id;
+    }
 }
 function setLogin() {
     document.getElementById("profile").innerHTML="<img src='https://icons.hackclub.com/api/icons/white/profile-fill' style='position: relative; top:4px; height:22px; overflow: hidden;'>"+"Log In";
 }
+
+function setProfileShow() {
+    if (document.getElementById("profile_name")!= null && document.getElementById("profile_password")!=null){
+        let p_name = document.getElementById("profile_name").value;
+        let pass = document.getElementById("profile_password").value;
+
+        //set the new name and password
+        //send to the database the mail and password to check if it connects
+        fetch('http://localhost:5000/updateProfile', {
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name : p_name, password : pass, id : id_password})
+        })
+        .then(response => response.json())
+        .then(data => {
+            communicate_get();
+            console.log(data.result);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+
+    document.getElementById("modifie_profile").innerHTML=
+        ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'> "
+        +"<h2 class='profile_name' id='profile_name'> "+name_pseudo+" </h2>"
+        +"<button class='profile_button' onclick='setProfileModifie()'> <img class='profile_name_image' src='https://icons.hackclub.com/api/icons/white/edit' style='width:45px;'></button> "
+        +"<p class='profile_mail' id='profile_mail'> "+ mail +" </p>"
+        +"<p class='profile_server' id='profile_server'> Server "+server_id+" </p>");
+
+
+}
+
+function setProfileModifie() {
+
+    document.getElementById("modifie_profile").innerHTML=
+        ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'> "
+        +"<input class='profile_name' id='profile_name' placeholder="+name_pseudo+" style='height:34px; width:200px; font-size: 32px; color:black;'>"
+        +"<button class='profile_button' onclick='setProfileShow()'> <img class='save_profile' src='https://icons.hackclub.com/api/icons/white/post' style='padding-top: 2px; padding-bottom: -2px; width:45px;'></button>" 
+        +"<p class='profile_mail' id='profile_mail'> "+ mail +" </p>"
+        +"<img src='https://icons.hackclub.com/api/icons/grey/private-outline' class='profile_password_icon'><input class='profile_password' id='profile_password' placeholder="+password+">"
+        +"<p class='profile_server'> Server "+server_id+" </p>");
+}
+
+
+function openProfile() {
+    if (!id_password) {
+        window.open("login.html","_self");
+    }
+    else{
+        window.open("profile.html","_self");
+    }
+}
+
 
 function passwordShow() {
     if (password_state == true) {
@@ -88,10 +157,10 @@ function submitLogin() {
             id_password = data.result;
             var expiration_date=new Date(Date.now()+20*1000);
             document.cookie = `id_password=${id_password}; ${expiration_date}`;
-            alert(document.cookie);
+            console.log(document.cookie);
             retrieveInfos();
             setProfile();
-            open('profile.html')
+            open('profile.html',"_self")
         }
 
     })
@@ -123,7 +192,6 @@ function submitRegister() {
             console.error(data.result);
         }
         else{
-            open("login.html");
             console.log(data.result);
         }
 
@@ -152,13 +220,13 @@ function communicate_get() {
             else{
                 let str_res =data.result.replace('(','').replace(')','').replace("'",'');
                 infos=str_res.split(",");
-                console.log(str_res);
                 name_pseudo = infos[0];
                 mail = infos[1];
                 password = infos[2];
                 server_id = infos[3];
                 position = (infos[4],infos[5]);
                 setProfile();
+                setProfileShow();
             }
 
         })

@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask_cors import CORS,cross_origin
 import sqlite3, random
 
 app = Flask(__name__)
-CORS(app)  # This will enable CORS for all routes
+CORS(app, supports_credentials=True)  # This will enable CORS for all routes
 
 
 @app.route('/login', methods=['POST'])
@@ -33,7 +33,7 @@ def checkLogIn(mail, password):
     else:
         cur = conn.cursor()
     
-        req=f"SELECT * FROM users WHERE (users.mail='{mail}' and users.password='{password}')"
+        req=f"SELECT * FROM users WHERE (users.mail='{mail}' and users.password='{password}');"
         cur.execute(req)
 
         returned_val=[]
@@ -93,6 +93,38 @@ def checkRegister(name, mail, password):
         conn.close()
         return f"worked"
 
+@app.route('/updateProfile', methods=['POST'])
+def updateProfile():
+    
+    data = request.get_json()
+    name = data.get('name')
+    password = data.get('password')
+    id = data.get('id')
+    # Call your Python function here
+    result = Profile(name, password, id)
+    return jsonify({'result': result})
+
+def Profile(name, password, id):
+    conn = sqlite3.connect('databases/profile_database.db')
+
+    if name != "":
+        cur = conn.cursor()
+        req = "UPDATE users SET name=? WHERE id_password=?;"
+        cur.execute(req, (name, id))
+        conn.commit()
+        cur.close()
+
+    if password != "":
+        cur = conn.cursor()
+        req = "UPDATE users SET password=? WHERE id_password=?;"
+        cur.execute(req, (password, id))
+        conn.commit()
+        cur.close()
+    
+    conn.close()
+
+    return "Updated name/passsword"
+
 @app.route('/communicate', methods=['POST'])
 def communicate():
     data = request.get_json()
@@ -105,7 +137,7 @@ def Communicate(id):
     conn = sqlite3.connect('databases/profile_database.db')
     cur = conn.cursor()
     
-    req=f"SELECT name,mail,password,server_id,position_x,position_y FROM users WHERE id_password='{id}'"
+    req=f"SELECT name,mail,password,server_id,position_x,position_y FROM users WHERE id_password='{id}';"
     cur.execute(req)
 
     all_infos = ""
