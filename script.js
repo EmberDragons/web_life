@@ -35,6 +35,12 @@ window.addEventListener("load", (event) => {
 });
 
 
+function logOut() {
+    document.cookie="id_password = ''; expires=Thu, 03 Aug 2008 12:00:00 UTC; path=/";
+    open('login.html',"_self");
+}
+
+
 function setProfile() {
     document.getElementById("profile").innerHTML="<img src='https://icons.hackclub.com/api/icons/white/profile-fill' style='position: relative; top:4px; height:22px; overflow: hidden;'>"+name_pseudo;
     if (document.getElementById("profile_name")!=null){
@@ -51,7 +57,8 @@ function setLogin() {
     document.getElementById("profile").innerHTML="<img src='https://icons.hackclub.com/api/icons/white/profile-fill' style='position: relative; top:4px; height:22px; overflow: hidden;'>"+"Log In";
 }
 
-function setProfileShow() {
+function setProfileShow(event) {
+    event.preventDefault();
     if (document.getElementById("profile_name")!= null && document.getElementById("profile_password")!=null){
         let p_name = document.getElementById("profile_name").value;
         let pass = document.getElementById("profile_password").value;
@@ -83,8 +90,8 @@ function setProfileShow() {
         +"<h2 class='profile_name' id='profile_name'> "+name_pseudo+" </h2>"
         +"<button class='profile_button' onclick='setProfileModifie()'> <img class='profile_name_image' src='https://icons.hackclub.com/api/icons/white/edit' style='width:45px;'></button> "
         +"<p class='profile_mail' id='profile_mail'> "+ mail +" </p>"
-        +"<p class='profile_server' id='profile_server'> Server "+server_id+" </p>");
-
+        +"<p class='profile_server' id='profile_server'> Server "+server_id+" </p>"
+        +"<button class='log_out_button' onclick='logOut()'> <img class='log_out_image' src='https://icons.hackclub.com/api/icons/white/door-leave' style='width:45px;'></button> ");
 
 }
 
@@ -93,7 +100,7 @@ function setProfileModifie() {
     document.getElementById("modifie_profile").innerHTML=
         ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'> "
         +"<input class='profile_name' id='profile_name' placeholder="+name_pseudo+" style='height:34px; width:200px; font-size: 32px; color:black;'>"
-        +"<button class='profile_button' onclick='setProfileShow()'> <img class='save_profile' src='https://icons.hackclub.com/api/icons/white/post' style='padding-top: 2px; padding-bottom: -2px; width:45px;'></button>" 
+        +"<button class='profile_button' onclick='setProfileShow(event)'> <img class='save_profile' src='https://icons.hackclub.com/api/icons/white/post' style='padding-top: 2px; padding-bottom: -2px; width:45px;'></button>" 
         +"<p class='profile_mail' id='profile_mail'> "+ mail +" </p>"
         +"<img src='https://icons.hackclub.com/api/icons/grey/private-outline' class='profile_password_icon'><input class='profile_password' id='profile_password' placeholder="+password+">"
         +"<p class='profile_server'> Server "+server_id+" </p>");
@@ -110,7 +117,8 @@ function openProfile() {
 }
 
 
-function passwordShow() {
+function passwordShow(event) {
+    event.preventDefault();
     if (password_state == true) {
         password_state=false;
         let ui_elt = document.getElementById("show_password_active");
@@ -129,12 +137,19 @@ function passwordShow() {
     }
 }
 
-function submitLogin() {
+function submitLogin(event) {
+    event.preventDefault();
     let mail = document.getElementById('mail_input').value;
     let password = document.getElementById('password_input').value;
 
 
-    //send to the database the mail and password to check if it connects
+    if (mail!=""){
+        //send to the database the mail and password to check if it connects
+        log_in(mail, password);
+    }
+}
+
+function log_in(mail, password){
     fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: {
@@ -162,16 +177,15 @@ function submitLogin() {
             setProfile();
             open('profile.html',"_self")
         }
-
     })
     .catch(error => {
         console.error('Error:', error);
     });
-
 }
 
 
-function submitRegister() {
+function submitRegister(event) {
+    event.preventDefault();
     let name = document.getElementById('name_input').value;
     let mail = document.getElementById('mail_input').value;
     let password = document.getElementById('password_input').value;
@@ -187,12 +201,14 @@ function submitRegister() {
     })
     .then(response => response.json())
     .then(data => {
+        log_in(mail, password);
         if (data.result == "Error-already_in_database"){
             alert("email already used");
             console.error(data.result);
         }
         else{
-            console.log(data.result);
+            //success
+            console.log(data.result+'lol');
         }
 
     })

@@ -393,6 +393,24 @@ input:not(:placeholder-shown) ~ label {
     color:rgb(255, 255, 255);
     background-color: rgb(206, 9, 9);
 }
+.topnav a.play {
+    zoom:115%;
+    position: absolute;
+    right:20%;
+    left:20%;
+    font-size: 22px;
+    font-weight: 600;
+    color: rgb(206, 9, 9);
+}
+
+.topnav a.play:hover {
+    animation: zoom 1s;
+    font-size: 25px;
+    cursor: pointer;
+    animation-fill-mode: forwards;  
+    color:#ee7752;
+    background-color: rgb(255, 255, 255);
+}
 
 .color_bar {
     padding: 70px 0;
@@ -429,21 +447,52 @@ input:not(:placeholder-shown) ~ label {
     top:135px;
 }
 
-
-.profile_button{
-    background-color: rgb(33, 39, 40);
+.log_out_button{
+    background-color: rgb(223, 10, 10);
     position: absolute;
-    right:50px;
+    right:30px;
+    bottom:15px;
     padding-left: 5px;
     align-items: center;
     font-size: 14px;
     border: none;
     border-radius: 15px;
+    transition: 0.4s;
+    box-shadow: 0 0 30px rgba(193, 14, 14, 0.5);
+}
+.log_out_button:hover{
+    cursor:pointer;
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(53, 53, 53, 0.5);
+}
+
+.profile_button{
+    background-color: rgb(33, 39, 40);
+    position: absolute;
+    right:50px;
     top:60px;
+    padding-left: 5px;
+    align-items: center;
+    font-size: 14px;
+    border: none;
+    border-radius: 15px;
     transition: 0.4s;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
 }
+.profile_button:hover{
+    cursor:pointer;
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+}
 
+.log_out_image{
+    padding-top: 4px;
+    padding-left: 4px;
+}
+.log_out_image:hover{ 
+    content:url(https://icons.hackclub.com/api/icons/red/door-leave);
+}
 .profile_name_image:hover{ 
     content:url(https://icons.hackclub.com/api/icons/grey/edit);
 }
@@ -451,11 +500,6 @@ input:not(:placeholder-shown) ~ label {
     content:url(https://icons.hackclub.com/api/icons/grey/post);
 }
 
-.profile_button:hover{
-    cursor:pointer;
-    background-color: rgb(255, 255, 255);
-    border-radius: 10px;
-}
 
 
 .profile_mail{
@@ -472,7 +516,7 @@ input:not(:placeholder-shown) ~ label {
     position: relative;
     position: fixed;
     bottom: 0;
-    right: 0;
+    left: 45px;
     padding-right: 30px;
 }
 

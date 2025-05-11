@@ -6,9 +6,8 @@
     <header>
         <div class="topnav">
             <a class="active" href="menu.html">Home</a>
-            <a class="active" href="#home">Create Server</a>
-            <a class="active" href="server_selection.html">Join Server</a>
             <a href="about.html" class="active">About</a>
+            <a class="play" href="server_selection.html">Play</a>
             <a class="split_log" onclick="openProfile()" id="profile"></a>
         </div>
     </header>
@@ -17,7 +16,7 @@
         <div class = "wrapper">
             <div class="form-box login">
                 <center><h2 style="font-family:'main_font';"> Login </h2></center>
-                <form action="#">
+                <form>
                     <div class = "input-box">
                         <img class="icon" src = "https://icons.hackclub.com/api/icons/grey/email-fill">
                         <input id="mail_input" type="email" placeholder="">
@@ -27,12 +26,12 @@
                         <img class="icon" src = "https://icons.hackclub.com/api/icons/grey/private">
                         <input id="password_input" type="password" placeholder="">
                         <label style="top:168px">Password</label>
-                        <button class="look" onclick="passwordShow()"> <img id="show_password_inactive" src="https://icons.hackclub.com/api/icons/grey/view"> </button>
+                        <button class="look" onclick="passwordShow(event);"> <img id="show_password_inactive" src="https://icons.hackclub.com/api/icons/grey/view"> </button>
                     </div>
                     <div class = "remember-forgot">
-                        <a href="#" style="position: relative; font-size: 60%; left:92px;" target="_blank" class="link"> Forgot Password?</a>
+                        <a href=”mailto:easyfirndoor@gmail.com” style="position: relative; font-size: 60%; left:92px;" class="link"> Forgot Password?</a>
                     </div>
-                    <button type="submit" class="btn" onclick="submitLogin()">Sign in</button>
+                    <button type="submit" class="btn" onclick="submitLogin(event);">Sign in</button>
                 </form>
                 <br><br><br>
                 <div style="font-family:'main_font'; font-size: 20px;">don't have an account? <a href="register.html" class="link"> Register </a></div> 

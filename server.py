@@ -109,7 +109,7 @@ def Profile(name, password, id):
 
     if name != "":
         cur = conn.cursor()
-        req = "UPDATE users SET name=? WHERE id_password=?;"
+        req = f"UPDATE users SET name=? WHERE id_password=?;"
         cur.execute(req, (name, id))
         conn.commit()
         cur.close()
@@ -120,7 +120,6 @@ def Profile(name, password, id):
         cur.execute(req, (password, id))
         conn.commit()
         cur.close()
-    
     conn.close()
 
     return "Updated name/passsword"
