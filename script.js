@@ -116,6 +116,31 @@ function openProfile() {
     }
 }
 
+function sendMail(event){
+    event.preventDefault();
+  
+    const email = document.getElementById('mail_input').value;
+    document.getElementById('hint_folder').innerText = 'Look into your spam folder.';
+
+    if (email == ""){
+        alert("Please enter an email");
+    }
+    else{
+        fetch('http://localhost:5000/changePasswordRequest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('status').innerText = data.result;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('status').innerText = 'Failed.';
+        });
+    }
+}
 
 function passwordShow(event) {
     event.preventDefault();
@@ -136,6 +161,7 @@ function passwordShow(event) {
         ui_input.type = "text";
     }
 }
+
 
 function submitLogin(event) {
     event.preventDefault();
@@ -170,6 +196,39 @@ function log_in(mail, password){
         }
         else{
             id_password = data.result;
+            var expiration_date=new Date(Date.now()+20*1000);
+            document.cookie = `id_password=${id_password}; ${expiration_date}`;
+            console.log(document.cookie);
+            retrieveInfos();
+            setProfile();
+            open('profile.html',"_self")
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function setNewPassword(event){
+    event.preventDefault();
+    let id_password = window.location.search.substring(1).replace("id_password=","");
+    console.log(id_password);
+    let new_password = document.getElementById('password_input').value;
+    fetch('http://localhost:5000/changePassword', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ mail : mail, new_password : new_password, id_password : id_password})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.result == "Error"){
+            alert('Error');
+            console.error(data.result);
+        }
+        else{
+            console.log(data.result);
             var expiration_date=new Date(Date.now()+20*1000);
             document.cookie = `id_password=${id_password}; ${expiration_date}`;
             console.log(document.cookie);

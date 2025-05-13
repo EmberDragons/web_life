@@ -394,7 +394,7 @@ input:not(:placeholder-shown) ~ label {
     background-color: rgb(206, 9, 9);
 }
 .topnav a.play {
-    zoom:115%;
+    zoom:105%;
     position: absolute;
     right:20%;
     left:20%;

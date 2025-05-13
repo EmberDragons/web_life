@@ -1,10 +1,21 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS,cross_origin
 import sqlite3, random
+import smtplib
+import os 
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # This will enable CORS for all routes
 
+
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -123,6 +134,111 @@ def Profile(name, password, id):
     conn.close()
 
     return "Updated name/passsword"
+
+@app.route('/changePassword', methods=['POST'])
+def changePassword():
+    data = request.get_json()
+    id_password = data.get('id_password')
+    new_password = data.get('new_password')
+    result = setPassword(id_password, new_password)
+    return jsonify({'result': result})
+
+def setPassword(id_password, new_password):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT * FROM users WHERE (users.id_password='{id_password}')"
+    cur.execute(req)
+
+    returned_val=[]
+    for elt in cur:
+        returned_val.append(elt)
+    cur.close()
+
+    if returned_val == []:
+        conn.close()
+        return f"Error"
+    else:
+        cur = conn.cursor()
+        req = "UPDATE users SET password=? WHERE id_password=?;"
+        cur.execute(req, (new_password, id_password))
+        conn.commit()  # <-- saving changes
+        cur.close()
+
+        conn.close()
+        return f"worked"
+
+@app.route('/changePasswordRequest', methods=['POST'])
+def changePasswordRequest():
+    data = request.get_json()
+    mail = data.get('email')
+    id_pass=checkIdPasswordFromMail(mail)
+    result="Error - Wrong Email"
+    if id_pass!="Error":
+        # Call your Python function here
+        result = resetRequest(mail, id_pass)
+    return jsonify({'result': result})
+def resetRequest(mail, id_pass):
+    subject='Reset Email'
+    body=(f"""\
+    <h3>Hello!</h3>
+
+    <p>You requested a password reset, clicking this link will allow you to set a new password for your account:</p>
+
+    <a href='password_reset.html'>http://localhost:8000/password_reset.html?id_password={id_pass}</a>
+    <br>
+    <a>--Web life Bot</a>
+    """)
+    msg = send_mail(mail, subject, body)
+
+    return msg
+
+def send_mail(recipient_email,subject,body):
+    try:
+        msg=MIMEMultipart()
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = recipient_email
+        msg['Subject'] = subject
+
+        msg.attach(MIMEText(body, 'html'))
+
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_ADDRESS,EMAIL_PASSWORD)
+            server.sendmail(EMAIL_ADDRESS, recipient_email, msg.as_string())
+
+        return "Sent !"
+    
+    except Exception as e:
+        return f"Error : {e}"
+
+def checkIdPasswordFromMail(mail):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT * FROM users WHERE (users.mail='{mail}')"
+    cur.execute(req)
+
+    returned_val=[]
+    for elt in cur:
+        returned_val.append(elt)
+    cur.close()
+
+    if returned_val == []:
+        conn.close()
+        return f"Error"
+    else:
+        cur = conn.cursor()
+    
+        req=f"SELECT * FROM users WHERE (users.mail='{mail}');"
+        cur.execute(req)
+
+        returned_val=[]
+        for elt in cur:
+            returned_val.append(elt)
+        cur.close()
+        conn.close()
+        return f"{returned_val[0][6]}"
 
 @app.route('/communicate', methods=['POST'])
 def communicate():
