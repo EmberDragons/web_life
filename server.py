@@ -6,6 +6,7 @@ import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
+import json
 
 
 app = Flask(__name__)
@@ -16,6 +17,40 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
+
+@app.route('/changeServer', methods=['POST'])
+def changeServer():
+    data = request.get_json()
+    server_id = data.get('server_id')
+    id_password = data.get('id_password')
+    # Call your Python function here
+    result = changeServerId(server_id, id_password)
+    return jsonify({'result': result})
+
+def changeServerId(id, id_password):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT * FROM users WHERE (users.id_password='{id_password}')"
+    cur.execute(req)
+
+    returned_val=[]
+    for elt in cur:
+        returned_val.append(elt)
+    cur.close()
+
+    if returned_val == []:
+        conn.close()
+        return f"Error-not_in_data_base"
+    else:
+        cur = conn.cursor()
+        req = f"UPDATE users SET server_id=? WHERE id_password=?;"
+        cur.execute(req, (id, id_password))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return f"set server id to {id}"
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -180,15 +215,15 @@ def changePasswordRequest():
     return jsonify({'result': result})
 def resetRequest(mail, id_pass):
     subject='Reset Email'
-    body=(f"""\
-    <h3>Hello!</h3>
+    body = f"""<pre> <h3>Hello!</h3>
 
     <p>You requested a password reset, clicking this link will allow you to set a new password for your account:</p>
 
-    <a href='password_reset.html'>http://localhost:8000/password_reset.html?id_password={id_pass}</a>
-    <br>
-    <a>--Web life Bot</a>
-    """)
+    Go to the page: <a href="http://localhost:8000/password_reset.html?id_password={id_pass}">click here to reset password http://localhost:8000/password_reset.html?id_password={id_pass}</a>
+    Best regards,
+    Web Life Team. (Jk i am single, just me....)
+    </pre>"""
+    body
     msg = send_mail(mail, subject, body)
 
     return msg
@@ -240,6 +275,57 @@ def checkIdPasswordFromMail(mail):
         conn.close()
         return f"{returned_val[0][6]}"
 
+@app.route('/updateOnlineTrue', methods=['POST'])
+def updateOnlineTrue():
+    data = request.get_json()
+    id_password = data.get('id_password')
+    result = setOnline(id_password, True)
+    return jsonify({'result': result})
+
+@app.route('/updateOnlineFalse', methods=['POST'])
+def updateOnlineFalse():
+    try:
+        # Parse the raw data from the request
+        raw_data = request.data.decode('utf-8')
+        data = json.loads(raw_data)  # Convert the raw string to JSON
+
+        id_password = data.get('id_password')
+
+        if not id_password:
+            return jsonify({'error': 'Missing id_password'}), 400
+        
+        result = setOnline(id_password, False)
+        return jsonify({'result': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def setOnline(id_password, is_online):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT * FROM users WHERE (users.id_password='{id_password}')"
+    cur.execute(req)
+
+    returned_val=[]
+    for elt in cur:
+        returned_val.append(elt)
+    cur.close()
+
+    if returned_val == []:
+        conn.close()
+        return f"Error"
+    else:
+
+        cur = conn.cursor()
+        req = "UPDATE users SET online=? WHERE id_password=?;"
+        cur.execute(req, (str(is_online), id_password))
+        conn.commit()  # <-- saving changes
+        cur.close()
+
+        conn.close()
+        return is_online
+
+
 @app.route('/communicate', methods=['POST'])
 def communicate():
     data = request.get_json()
@@ -266,6 +352,36 @@ def Communicate(id):
         return f"{str_info}"
     else:
         return f"Error-idpassword incorrect"
+    
+@app.route('/serverPeople', methods=['POST'])
+def serverPeople():
+    data = request.get_json()
+    id = data.get('max_server_id')
+    # Call your Python function here
+    result = getNbServerPeople(id)
+    return jsonify({'result': result})
+
+def getNbServerPeople(max_server_id):
+    conn = sqlite3.connect('databases/profile_database.db')
+    
+    nbr_people = ""
+    for i in range(1,max_server_id+1):
+        cur = conn.cursor()
+        req=f"SELECT count(*) FROM users WHERE server_id='{i}';"
+        cur.execute(req)
+
+        all_infos = ""
+        for elt in cur:
+            all_infos+=(str(elt).replace('[','').replace(']','').replace('(','').replace(')','').replace("'",''))
+
+        nbr_people+=str(all_infos.split(',')).replace('[','').replace(']','').replace('(','').replace(')','').replace("'",'')
+        cur.close()
+
+    conn.close()
+    if nbr_people != "":
+        return f"{nbr_people}"
+    else:
+        return f"Error-server_id incorrect"
 
 
 def getDatabaseCodes():

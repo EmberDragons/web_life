@@ -1,6 +1,9 @@
 var password_state = false;
+var max_server = 8;
 
 var infos;
+var list_server_nb;
+var max_people_server =30;
 
 var name_pseudo;
 var mail;
@@ -26,17 +29,114 @@ function retrieveInfos() {
 
 
 window.addEventListener("load", (event) => {
+    setListServer();
     if (document.cookie != ""){
         retrieveInfos();
+        
+        if (document.getElementById("set_list_server")) {
+            getAllServerPeople();
+        }
     }
     else{
         setLogin();
     }
+    if (id_password != undefined){
+        setConnectedTrue();
+    }
 });
 
 
+window.addEventListener("beforeunload", (event) => {
+    if (id_password != undefined) {
+        const url = 'http://localhost:5000/updateOnlineFalse';
+        const data = JSON.stringify({ id_password: id_password });
+        navigator.sendBeacon(url, data);
+    }
+});
+
+window.addEventListener("unload", (event) => {
+    if (id_password != undefined) {
+        const url = 'http://localhost:5000/updateOnlineFalse';
+        const data = JSON.stringify({ id_password: id_password });
+        navigator.sendBeacon(url, data);
+    }
+});
+
+
+function setListServer() {
+    if (document.getElementById('set_list_server') != null){
+        let str_list = ""
+        for (let nb=1;nb<max_server+1;nb++){
+            str_list += "<div class='list_server'> <span class='server_name'>Server "+nb.toString()+"</span> <button class='join_button' onclick='joinServer("+nb.toString()+")'>Join</button> <span class='people' id='people_nb_"+nb.toString()+"'>12/30</span> </div>";
+        }
+        document.getElementById('set_list_server').innerHTML = str_list;
+    }
+}
+
+function setConnectedTrue(){
+    fetch('http://localhost:5000/updateOnlineTrue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_password : id_password})
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function getAllServerPeople(){
+    fetch('http://localhost:5000/serverPeople', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ max_server_id : max_server})
+    })
+    .then(response => response.json())
+    .then(data => {
+        list_server_nb = data.result.split(',');
+        setPeopleShow();
+        console.log(data.result);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+
+    setTimeout(getAllServerPeople, 2500);
+}
+
+function setPeopleShow(){
+    for (let nb=0;nb<max_server;nb++){
+        document.getElementById('people_nb_'+(nb+1).toString()).innerHTML = list_server_nb[nb].toString()+'/'+max_people_server.toString();
+    }
+}
+
+function joinServer(server_id){
+    if (id_password != null){
+        fetch('http://localhost:5000/changeServer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ server_id: server_id,  id_password : id_password})
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.result);
+            getAllServerPeople();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    else{
+        open("login.html", "_self");
+    }
+}
+
 function logOut() {
     document.cookie="id_password = ''; expires=Thu, 03 Aug 2008 12:00:00 UTC; path=/";
+    
     open('login.html',"_self");
 }
 
@@ -57,8 +157,7 @@ function setLogin() {
     document.getElementById("profile").innerHTML="<img src='https://icons.hackclub.com/api/icons/white/profile-fill' style='position: relative; top:4px; height:22px; overflow: hidden;'>"+"Log In";
 }
 
-function setProfileShow(event) {
-    event.preventDefault();
+function setProfileShow() {
     if (document.getElementById("profile_name")!= null && document.getElementById("profile_password")!=null){
         let p_name = document.getElementById("profile_name").value;
         let pass = document.getElementById("profile_password").value;
@@ -300,8 +399,8 @@ function communicate_get() {
                 password = infos[2];
                 server_id = infos[3];
                 position = (infos[4],infos[5]);
+                online = infos[6];
                 setProfile();
-                setProfileShow();
             }
 
         })

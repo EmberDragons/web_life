@@ -7,6 +7,17 @@
     src: url(fonts/fonts/AOUWobbleText-Bold.ttf);
     font-style: bold;
 }   
+
+
+@keyframes zoom_button {
+    0% {
+        zoom: 100%;
+    }
+    100% {
+        zoom: 120%;
+    }
+}
+
 @keyframes zoom {
     0% {
         zoom: 100%;
@@ -345,6 +356,74 @@ input:not(:placeholder-shown) ~ label {
     font-size: 17px;
 }
 
+.list_server_container {
+    margin-left: 10%;
+    margin-right: 10%;
+    float: left;
+    border: 12px solid #000000;
+    background-color: #000000;
+    border-radius: 5px;
+    width: 80%;
+    height: 100%;
+    margin-bottom: 200px;
+}
+
+.list_server{
+    float: left;
+    border-radius: 5px;
+    border: 2px solid #323232;
+    background-color: #212121;
+    width: 100%;
+}
+
+.list_server .server_name{
+    float: left;
+    position: relative;
+    text-align: left;
+    padding-top: 5px;
+    margin: 15px;
+    margin-left: 20px;
+    font-size: 28px;
+    font-family: "main_font";
+}
+
+.list_server .people{
+    /*set color by code*/
+    float: right;
+    position: relative;
+    text-align: right;
+    margin: 15px;
+    font-size: 25px;
+    font-family: "sub_font";
+}
+
+.list_server .join_button{
+    position: absolute;
+    color: white;
+    background-color: rgb(211, 10, 10);
+    float: left;
+    left: 27%;
+    margin-top: 10px;
+    padding: 10px;
+    align-items: center;
+    font-family: 'main_font';
+    font-size: 25px;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.35);
+    transition: 0.5s;
+}
+
+.list_server .join_button:hover{
+    cursor:pointer;
+    color:rgba(227, 20, 10, 0.8);
+    transform:scale(1.1);
+    
+    background-color: rgba(77, 76, 76, 0.07);
+    box-shadow: 0 0 2px rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
 .topnav {
     overflow: hidden;
     background-color: rgb(31, 37, 38);
@@ -404,6 +483,40 @@ input:not(:placeholder-shown) ~ label {
 }
 
 .topnav a.play:hover {
+    border-radius: 15px 3px 15px 3px;
+    animation: zoom 1s;
+    font-size: 25px;
+    cursor: pointer;
+    animation-fill-mode: forwards;  
+    color:#ee7752;
+    background-color: rgb(255, 255, 255);
+}
+
+.topnav a.play_active {
+    /*
+    position: absolute;
+    font-weight: 600;
+    right:20%;
+    left:20%;
+    border-radius: 15px 3px 15px 3px;
+    animation: zoom 1s;
+    font-size: 25px;
+    cursor: pointer;
+    animation-fill-mode: forwards;  
+    color:#ee7752;
+    background-color: rgb(255, 255, 255);*/
+    
+    zoom:105%;
+    position: absolute;
+    right:20%;
+    left:20%;
+    font-size: 22px;
+    font-weight: 600;
+    color: rgb(206, 9, 9);
+}
+
+.topnav a.play_active:hover {
+    border-radius: 15px 3px 15px 3px;
     animation: zoom 1s;
     font-size: 25px;
     cursor: pointer;
@@ -419,7 +532,7 @@ input:not(:placeholder-shown) ~ label {
 }
 
 .move_up_down{
-    animation: move 1.5s infinite alternate;
+    animation: move 1.rgba(153, 153, 153, 0.781)ate;
 }
 
 .profile_name{
