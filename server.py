@@ -28,6 +28,7 @@ def changeServer():
     result = changeServerId(server_id, id_password)
     return jsonify({'result': result})
 
+
 def changeServerId(id, id_password):
     conn = sqlite3.connect('databases/profile_database.db')
     cur = conn.cursor()
@@ -42,7 +43,7 @@ def changeServerId(id, id_password):
 
     if returned_val == []:
         conn.close()
-        return f"Error-not_in_data_base"
+        return f"Error"
     else:
         cur = conn.cursor()
         req = f"UPDATE users SET server_id=? WHERE id_password=?;"
@@ -367,7 +368,7 @@ def getNbServerPeople(max_server_id):
     nbr_people = ""
     for i in range(1,max_server_id+1):
         cur = conn.cursor()
-        req=f"SELECT count(*) FROM users WHERE server_id='{i}';"
+        req=f"SELECT count(*) FROM users WHERE server_id='{i}' and online='True';"
         cur.execute(req)
 
         all_infos = ""

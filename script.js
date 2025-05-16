@@ -9,9 +9,15 @@ var name_pseudo;
 var mail;
 var password;
 var server_id;
-var position;
+var position_x = 500;
+var position_y = 500;
 var id_password;
 
+const speed_x = 5;
+const speed_y = 5;
+const friction = 0.6;
+const max_speed = 10;
+var controller = {}; //for all inputs and keys
 
 //cookies XD
 
@@ -25,7 +31,6 @@ function retrieveInfos() {
 }
 
 
-//setInterval(function(){communicate()},1000);
 
 
 window.addEventListener("load", (event) => {
@@ -61,6 +66,24 @@ window.addEventListener("unload", (event) => {
         navigator.sendBeacon(url, data);
     }
 });
+
+
+//input handler
+window.addEventListener("keydown", (event) => {
+    key_down_control(event);
+    handleInput();
+});
+window.addEventListener("keyup", (event) => {
+    key_up_control(event);
+    handleInput();
+});
+
+function key_up_control(e) {
+    controller[e.key] = false;
+}
+function key_down_control(e) {
+    controller[e.key] = true;
+}
 
 
 function setListServer() {
@@ -104,7 +127,7 @@ function getAllServerPeople(){
         console.error('Error:', error);
     });
 
-    setTimeout(getAllServerPeople, 2500);
+    setTimeout(getAllServerPeople, 1500);
 }
 
 function setPeopleShow(){
@@ -123,7 +146,7 @@ function joinServer(server_id){
         .then(response => response.json())
         .then(data => {
             console.log(data.result);
-            getAllServerPeople();
+            open("play.html",'_self');
         })
         .catch(error => {
             console.error('Error:', error);
@@ -375,7 +398,69 @@ function submitRegister(event) {
     });
 }
 
+//PLAY PART
+updatePosPlayer();
+speedModifier();
+function handleInput(){
+    for(var key in controller) {
+        var value = controller[key];
+        if (value==true) {
+            //we do smth
+            if (key == "a"){
+                movePlayer(position_x-speed_x, position_y);
+            }if (key == "d"){
+                movePlayer(position_x+speed_x, position_y);
+            }if (key == "s"){
+                movePlayer(position_x, position_y-speed_y);
+            }if (key == "w"){
+                movePlayer(position_x, position_y+speed_y);
+            }
+        }
+    }
+}
 
+function movePlayer(x, y){
+    if (checkForOutOfBounds(x,y) == false) {
+        position_x = x;
+        position_y = y;
+    }
+}
+
+function speedModifier() {
+    for(var key in controller) {
+        var value = controller[key];
+        if (key != "a" &&  key != "d" && speed_x!=0){
+            speed_x*=friction;
+        }
+        if (key != "s" &&  key != "w" && speed_y!=0){
+            speed_y*=friction;
+        }
+    }
+    setInterval(function(){speedModifier()},50);
+}
+
+function updatePosPlayer() {
+    const player = document.getElementById("player");
+    if (player!=undefined){
+        player.style.left = position_x + "px";
+        player.style.top = position_y + "px";
+        console.log(player.style.left);
+    }
+    setInterval(function(){updatePosPlayer()},100);
+}
+
+function checkForOutOfBounds(pos_x, pos_y) {
+    const delta = 50;
+    if (pos_x>window.innerWidth-delta||pos_x<delta){
+        return true;
+    }
+    if (pos_y>window.innerHeight-delta||pos_y<delta){
+        return true;
+    }
+    return false;
+}
+
+//COMMUNICATION
 function communicate_get() {
     if (id_password != undefined){
         //send to the database the id_password
