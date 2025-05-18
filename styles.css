@@ -599,6 +599,47 @@ input:not(:placeholder-shown) ~ label {
     border-radius: 10px;
 }
 
+.profile_other_button{
+    background-color: rgb(227, 15, 11);
+    position: absolute;
+    right:50px;
+    top:60px;
+    padding-left: 5px;
+    align-items: center;
+    font-size: 14px;
+    border: none;
+    border-radius: 15px;
+    transition: 0.4s;
+    box-shadow: 0 0 10px rgba(223, 5, 5, 0.35);
+}
+.profile_other_button:hover{
+    cursor:pointer;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+}
+
+.profile_other_button_remove{
+    background-color: rgb(255, 255, 255);
+    position: absolute;
+    right:50px;
+    top:60px;
+    padding-left: 5px;
+    align-items: center;
+    font-size: 14px;
+    border: none;
+    border-radius: 15px;
+    transition: 0.4s;
+    box-shadow: 0 0 10px rgba(48, 48, 48, 0.35);
+}
+.profile_other_button_remove:hover{
+    cursor:pointer;
+    box-shadow: 0 0 10px rgba(188, 5, 5, 0.35);
+    background-color: rgb(227, 15, 11);
+    border-radius: 10px;
+}
+
+
 .log_out_image{
     padding-top: 4px;
     padding-left: 4px;
@@ -613,7 +654,13 @@ input:not(:placeholder-shown) ~ label {
     content:url(https://icons.hackclub.com/api/icons/grey/post);
 }
 
+.profile_other_name_image:hover{ 
+    content:url(https://icons.hackclub.com/api/icons/red/friend);
+}
 
+.profile_other_name_image_remove:hover{ 
+    content:url(https://icons.hackclub.com/api/icons/white/member-remove);
+}
 
 .profile_mail{
     position: absolute;
@@ -659,6 +706,32 @@ input:not(:placeholder-shown) ~ label {
     height:50px;
 }
 
+.player_arrow {
+    z-index: 600;
+    width:30px;
+    position: relative;
+    top:7px;
+    left: 10px;
+}
+
+.player_name {
+    z-index: 600;
+    text-align: center;
+    position: relative;
+    bottom:20px;
+    right: 27px;
+    font-family: "main_font";
+    font-size: 10px;
+    color:rgb(79, 79, 79);
+    border-width: 0;
+    background: transparent;
+}
+
+.player_name:hover {
+    cursor: pointer;
+    color:rgb(255, 105, 5);
+    font-style: italic;
+}
 
 header {
     position: sticky;

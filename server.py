@@ -131,7 +131,7 @@ def checkRegister(name, mail, password):
 
 
         req = (
-            f"INSERT INTO users VALUES ('{name}','{mail}','{password}',0,'0','0','{generated_key}');"
+            f"INSERT INTO users VALUES ('{name}','{mail}','{password}',1,'0','0','{generated_key}','False');"
         )
         cur.execute(req)
         conn.commit()  # <-- saving changes
@@ -139,6 +139,36 @@ def checkRegister(name, mail, password):
 
         conn.close()
         return f"worked"
+
+
+@app.route('/updatePosiion', methods=['POST'])
+def updatePosition():
+    data = request.get_json()
+    id_password = data.get('id_password')
+    position_x = data.get('position_x')
+    position_y = data.get('posiyion_y')
+    result = Position(id_password, position_x, position_y)
+    return jsonify({"result":result})
+
+def Position(id_password, pos_x, pos_y):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur_x=conn.cursor()
+
+    req=("UPDATE users SET position_x =? WHERE id_password = ?")
+    cur_x.execute(req, (pos_x, id_password))
+    conn.commit()
+    cur_x.close()
+
+    cur_y=conn.cursor()
+
+    req=("UPDATE users SET position_y =? WHERE id_password = ?")
+    cur_y.execute(req, (pos_y, id_password))
+    conn.commit()
+    cur_y.close()
+
+    conn.close()
+
+    return "worked"
 
 @app.route('/updateProfile', methods=['POST'])
 def updateProfile():
@@ -170,6 +200,159 @@ def Profile(name, password, id):
     conn.close()
 
     return "Updated name/passsword"
+
+@app.route('/showPeople', methods=['POST'])
+def showPeople():
+    data = request.get_json()
+    mail = data.get('mail')
+    result = setProfile(mail)
+    return jsonify({'result': result})
+def setProfile(mail):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT * FROM users WHERE (users.mail='{mail}')"
+    cur.execute(req)
+
+    all_infos = ""
+    for elt in cur:
+        all_infos+=str(elt)
+    cur.close()
+
+    conn.close()
+    if all_infos != []:
+        str_info = str(all_infos).replace('[','').replace(']','').replace('(','').replace(')','').replace("'",'')
+        return f"{str_info}"
+
+@app.route('/isFriend', methods=['POST'])
+def isFriend():
+    data = request.get_json()
+    mail = data.get('mail')
+    id_password = data.get('id_password')
+    result = checkFriendList(mail, id_password)
+    return jsonify({'result': result})
+def checkFriendList(mail, id_password):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT friend_list FROM users WHERE (users.id_password='{id_password}')"
+    cur.execute(req)
+
+    all_friends = []
+    for elt in cur:
+        all_friends = str(elt)#elt = nana;nini;nono
+    cur.close()
+
+    conn.close()
+    if mail in all_friends:
+        return "True"
+    else:
+        return "False"
+
+@app.route('/getProfile', methods=['POST'])
+def getProfile():
+    data = request.get_json()
+    mail = data.get('mail')
+    result = getProfileOf(mail)
+    return jsonify({'result': result})
+def getProfileOf(mail):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT name, server_id FROM users WHERE (users.mail='{mail}')"
+    cur.execute(req)
+
+    infos = ""
+    for elt in cur:
+        infos+=str(elt)#elt = nana;nini;nono
+    cur.close()
+
+    conn.close()
+    return infos
+    
+@app.route('/addFriend', methods=['POST'])
+def addFriend():
+    data = request.get_json()
+    mail = data.get('mail')
+    id_password = data.get('id_password')
+    result = plusFriend(id_password, mail)
+    return jsonify({'result': result})
+
+def plusFriend(id_password, mail):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT friend_list FROM users WHERE (users.id_password='{id_password}')"
+    cur.execute(req)
+
+    returned_val = ""
+    for elt in cur:
+        returned_val=str(elt)
+    cur.close()
+    mail_str = ""
+    for elt in returned_val.split(";"):
+        n_elt=elt.replace('"',"").replace("'","").replace(')',"").replace('(',"").replace(";","").replace(",","")
+        if '@' in n_elt:
+            if n_elt != mail:
+                mail_str+=n_elt+';'
+    cur.close()
+    #now we add the new mail to the str
+    mail_str += mail+";"
+
+    if returned_val == []:
+        conn.close()
+        return f"Error - couldn't add"
+    else:
+
+        cur = conn.cursor()
+        req = "UPDATE users SET friend_list=? WHERE id_password=?;"
+        cur.execute(req, (mail_str, id_password))
+        conn.commit()  # <-- saving changes
+        cur.close()
+
+        conn.close()
+        return "worked"
+
+@app.route('/removeFriend', methods=['POST'])
+def removeFriend():
+    data = request.get_json()
+    mail = data.get('mail')
+    id_password = data.get('id_password')
+    result = ridFriend(id_password, mail)
+    return jsonify({'result': result})
+
+def ridFriend(id_password, mail):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT friend_list FROM users WHERE (users.id_password='{id_password}')"
+    cur.execute(req)
+
+    returned_val=""
+    for elt in cur:
+        returned_val=str(elt)
+    cur.close()
+    mail_str = ""
+
+    if mail not in returned_val:
+        conn.close()
+        return f"Error - couldn't remove"
+    else:
+        print(returned_val)
+        for elt in returned_val.split(";"):
+            n_elt=elt.replace('"',"").replace("'","").replace(')',"").replace('(',"").replace(";","").replace(",","")
+            if '@' in n_elt:
+                if n_elt != mail:
+                    mail_str+=n_elt+';'
+            
+        cur = conn.cursor()
+        req = "UPDATE users SET friend_list=? WHERE id_password=?;"
+        cur.execute(req, (mail_str, id_password))
+        conn.commit()  # <-- saving changes
+        cur.close()
+
+        conn.close()
+        return mail_str
 
 @app.route('/changePassword', methods=['POST'])
 def changePassword():
@@ -404,7 +587,6 @@ def generateKey():
     alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     list_rand_letters = [random.randint(0,len(alphabet)-1) for _ in range(10)]
     list_rand_numbers = [random.randint(0,len(numbers)-1) for _ in range(5)]
-    print(list_rand_letters, list_rand_numbers)
     code=""
     for elt in list_rand_letters:
         code+=alphabet[elt]

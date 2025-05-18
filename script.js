@@ -13,16 +13,22 @@ var position_x = 500;
 var position_y = 500;
 var id_password;
 
-const speed_x = 5;
-const speed_y = 5;
-const friction = 0.6;
-const max_speed = 10;
-var controller = {}; //for all inputs and keys
+var speed_x = 0.01;
+var speed_y = 0.01;
+var controller = {"a" : false,
+                "d" : false,
+                "w" : false,
+                "s" : false}; //for all inputs and keys
+
+
+//multiplayer
+var profile_shown = {};
+
 
 //cookies XD
 
 function retrieveInfos() {
-    id_password=document.cookie.replace("id_password=","").replace(";","");
+    id_password=cookie_get('id_password');
     if (!id_password) {
         console.error("id_password cookie not found");
         return;
@@ -35,9 +41,8 @@ function retrieveInfos() {
 
 window.addEventListener("load", (event) => {
     setListServer();
-    if (document.cookie != ""){
+    if (cookie_get('id_password') != undefined){
         retrieveInfos();
-        
         if (document.getElementById("set_list_server")) {
             getAllServerPeople();
         }
@@ -48,6 +53,14 @@ window.addEventListener("load", (event) => {
     if (id_password != undefined){
         setConnectedTrue();
     }
+    if(document.getElementsByName("play").length!=0){
+        updatePosPlayer();
+        handleInput();
+    }
+    if ((document.getElementById("friend")) || (document.getElementById("stranger"))) {
+        mail = cookie_get("mail");
+        GetProfile(mail);
+    }
 });
 
 
@@ -56,14 +69,10 @@ window.addEventListener("beforeunload", (event) => {
         const url = 'http://localhost:5000/updateOnlineFalse';
         const data = JSON.stringify({ id_password: id_password });
         navigator.sendBeacon(url, data);
-    }
-});
-
-window.addEventListener("unload", (event) => {
-    if (id_password != undefined) {
-        const url = 'http://localhost:5000/updateOnlineFalse';
-        const data = JSON.stringify({ id_password: id_password });
-        navigator.sendBeacon(url, data);
+        
+        const url2 = 'http://localhost:5000/updatePosition';
+        const data2 = JSON.stringify({ id_password: id_password,  position_x: position_x, position_y: position_y});
+        navigator.sendBeacon(url2, data2);
     }
 });
 
@@ -71,11 +80,9 @@ window.addEventListener("unload", (event) => {
 //input handler
 window.addEventListener("keydown", (event) => {
     key_down_control(event);
-    handleInput();
 });
 window.addEventListener("keyup", (event) => {
     key_up_control(event);
-    handleInput();
 });
 
 function key_up_control(e) {
@@ -104,7 +111,7 @@ function setConnectedTrue(){
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data.result);
+        //console.log(data.result);
     })
     .catch(error => {
         console.error('Error:', error);
@@ -155,6 +162,150 @@ function joinServer(server_id){
     else{
         open("login.html", "_self");
     }
+}
+
+
+//friends
+function add_friend() {
+    if (id_password!=undefined){
+        friend_mail = cookie_get('mail');
+
+        fetch('http://localhost:5000/addFriend', {
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ mail : friend_mail, id_password : id_password})
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.result);
+            open("other_profile_friend.html", "_self");
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    else {
+        open("login.html", "_self");
+    }
+}
+function remove_friend() {
+    if (id_password!=undefined){
+        friend_mail = cookie_get('mail');
+
+        fetch('http://localhost:5000/removeFriend', {
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ mail : friend_mail, id_password : id_password})
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.result);
+            open("other_profile_stranger.html", "_self");
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    else {
+        open("login.html", "_self");
+    }
+}
+
+function see_profile(pers_mail) {
+    var expiration_date=new Date(Date.now()+20*1000);
+    document.cookie = `mail_seeing=${pers_mail}; ${expiration_date}`;
+    //if friend...
+    is_friend(pers_mail).then(isFriend => {
+        if (isFriend == "True") {
+            open("other_profile_friend.html", "_self");
+        } else {
+            open("other_profile_stranger.html", "_self");
+        }
+    });
+}
+
+function is_friend(mail) {
+    return fetch('http://localhost:5000/isFriend', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mail : mail, id_password : id_password })
+    })
+    .then(response => response.json())
+    .then(data => data.result) // assuming the server returns {result: true/false}
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function setProfileStranger() {
+    document.getElementById("others_profile").innerHTML=
+        ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'>" +
+                "<h2 class='profile_name' id='profile_name'>  "+profile_shown["name"]+"</h2>" +
+                "<button class='profile_other_button' onclick='add_friend()'> <img class='profile_other_name_image' src='https://icons.hackclub.com/api/icons/white/friend' style='width:45px;'></button>"+
+                "<p class='profile_mail' id='profile_mail'>" +profile_shown["mail"]+ "</p>"+
+                "<p class='profile_server' id ='profile_server'> Server "+profile_shown["server"]+" </p>");
+}
+
+function setProfileFriend() {
+    document.getElementById("others_profile").innerHTML=
+        ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'>" +
+                "<h2 class='profile_name' id='profile_name'>  "+profile_shown["name"]+"</h2>" +
+                "<button class='profile_other_button_remove' onclick='remove_friend()'> <img class='profile_other_name_image_remove' src='https://icons.hackclub.com/api/icons/red/member-remove' style='width:45px;'></button>"+
+                "<p class='profile_mail' id='profile_mail'>" +profile_shown["mail"]+ "</p>"+
+                "<p class='profile_server' id ='profile_server'> Server "+profile_shown["server"]+" </p>");
+}
+
+function cookie_get(param){
+    let infos = document.cookie.split(";");
+    let to_return;
+    for (let part of infos){
+        part=part.trim()
+        if (part.startsWith(param)){
+            return part.split('=')[1];
+        }
+    }
+    return undefined;
+}
+
+function GetProfile(mail) {
+    fetch('http://localhost:5000/getProfile', {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({mail:mail})
+    })
+    .then(response => response.json())
+    .then(data => {
+        let datas = data.result;
+        let all_datas = datas.replace(")","").replaceAll("'","").replace("(","").split(",");
+        console.log(all_datas)
+        profile_shown["mail"]=mail;
+        profile_shown["name"]=all_datas[0];
+        profile_shown["server"]=all_datas[1];
+        is_friend(mail).then(isFriend => {
+            if (isFriend == "True") {
+                setProfileFriend();
+            } else {
+                setProfileStranger();
+            }
+        });
+        
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 }
 
 function logOut() {
@@ -399,54 +550,83 @@ function submitRegister(event) {
 }
 
 //PLAY PART
-updatePosPlayer();
-speedModifier();
+
 function handleInput(){
+    list = [0,0,0,0];
+
     for(var key in controller) {
         var value = controller[key];
         if (value==true) {
             //we do smth
             if (key == "a"){
-                movePlayer(position_x-speed_x, position_y);
+                list[0] = speed_x;
             }if (key == "d"){
-                movePlayer(position_x+speed_x, position_y);
-            }if (key == "s"){
-                movePlayer(position_x, position_y-speed_y);
+                list[1] = speed_x;
             }if (key == "w"){
-                movePlayer(position_x, position_y+speed_y);
+                list[2] = speed_y;
+            }if (key == "s"){
+                list[3] = speed_y;
             }
         }
     }
+    movePlayer(position_x-list[0]+list[1], position_y-list[2]+list[3]);
+    setInterval(function(){handleInput()},50);
 }
 
-function movePlayer(x, y){
-    if (checkForOutOfBounds(x,y) == false) {
-        position_x = x;
-        position_y = y;
+function movePlayer(x, y, name='player'){
+    if (name == "player"){
+        if (x!=position_x && y!=position_y){
+            mid_x=(x-position_x)*0.71;
+            mid_y=(y-position_y)*0.71;
+            if (checkForOutOfBounds(position_x+mid_x,position_y+mid_y) == false) {
+                position_x = position_x+mid_x;
+                position_y = position_y+mid_y;
+            }
+        }
+        else{
+            if (checkForOutOfBounds(x,y) == false) {
+                position_x = x;
+                position_y = y;
+            }
+        }
+    }
+    else {
+        //we are moving a another player
     }
 }
-
+/*
 function speedModifier() {
-    for(var key in controller) {
-        var value = controller[key];
-        if (key != "a" &&  key != "d" && speed_x!=0){
-            speed_x*=friction;
-        }
-        if (key != "s" &&  key != "w" && speed_y!=0){
-            speed_y*=friction;
+    if ((controller["a"] == true || controller["d"] == true) && speed_x<max_speed){
+        speed_x*=acc;
+    }
+    if ((controller["s"] == true || controller["w"] == true) && speed_y<max_speed){
+        speed_y*=acc;
+    }
+    if (controller["a"] == false && controller["d"] == false && speed_x>norm_speed){
+        speed_x*=friction;
+        if (last_keys_axis["horizontal"] == "a"){
+            console.log(speed_x)
+            movePlayer(position_x+speed_x, position_y);
+        }if (last_keys_axis["horizontal"] == "d"){
+            movePlayer(position_x-speed_x, position_y);
+    }
+    if (controller["a"] == false && controller["d"] == false && speed_y>norm_speed){
+        speed_y*=friction;
+        }if (last_keys_axis["vertical"] == "s"){
+            movePlayer(position_x, position_y-speed_y);
+        }if (last_keys_axis["vertical"] == "w"){
+            movePlayer(position_x, position_y+speed_y);
         }
     }
-    setInterval(function(){speedModifier()},50);
-}
+}*/
 
 function updatePosPlayer() {
     const player = document.getElementById("player");
     if (player!=undefined){
         player.style.left = position_x + "px";
         player.style.top = position_y + "px";
-        console.log(player.style.left);
     }
-    setInterval(function(){updatePosPlayer()},100);
+    setInterval(function(){updatePosPlayer()},50);
 }
 
 function checkForOutOfBounds(pos_x, pos_y) {
@@ -461,6 +641,26 @@ function checkForOutOfBounds(pos_x, pos_y) {
 }
 
 //COMMUNICATION
+
+function set_position() {
+    if (id_password!=undefined) {
+        fetch('http://localhost:5000/updatePosition', {
+            method: 'Post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({id_password : id_password, position_x : position_x, position_y : position_y})
+        })
+        .then(response = response.json())
+        .then( data => {
+            console.log(data);
+        })
+        .catch( error => {
+            console.error(error);
+        })
+    }
+}
+
 function communicate_get() {
     if (id_password != undefined){
         //send to the database the id_password
