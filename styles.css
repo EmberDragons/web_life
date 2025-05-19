@@ -680,9 +680,17 @@ input:not(:placeholder-shown) ~ label {
     padding-right: 30px;
 }
 
+.caracter_color{
+    position:absolute;
+    left:50px;
+    top:200px;
+    background-color: #ffffff;
+    width:80px;
+    height:80px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+}
 
-
-.background_color{
+.banner{
     z-index: -999;
     position:absolute;
     left:0px;
@@ -692,7 +700,7 @@ input:not(:placeholder-shown) ~ label {
     height:140px;
 }
 
-/*play*/
+        /*----------------------------------PLAY----------------------------------*/
 .player_main{
     z-index: 500;
     position:absolute;
@@ -725,6 +733,22 @@ input:not(:placeholder-shown) ~ label {
     color:rgb(79, 79, 79);
     border-width: 0;
     background: transparent;
+}
+
+.friend_name {
+    text-align: center;
+    font-family: "main_font";
+    font-size: 14px;
+    color:rgb(255, 105, 5);
+    border-width: 0;
+    background: transparent;
+}
+
+.friend_name:hover {
+    cursor: pointer;
+    color:rgb(255, 59, 5);
+    font-style: italic;
+    text-decoration: underline;
 }
 
 .player_name:hover {

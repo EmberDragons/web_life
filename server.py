@@ -131,7 +131,7 @@ def checkRegister(name, mail, password):
 
 
         req = (
-            f"INSERT INTO users VALUES ('{name}','{mail}','{password}',1,'0','0','{generated_key}','False');"
+            f"INSERT INTO users VALUES ('{name}','{mail}','{password}',1,'#ffffff','#ffffff','{generated_key}','False','');"
         )
         cur.execute(req)
         conn.commit()  # <-- saving changes
@@ -141,34 +141,6 @@ def checkRegister(name, mail, password):
         return f"worked"
 
 
-@app.route('/updatePosiion', methods=['POST'])
-def updatePosition():
-    data = request.get_json()
-    id_password = data.get('id_password')
-    position_x = data.get('position_x')
-    position_y = data.get('posiyion_y')
-    result = Position(id_password, position_x, position_y)
-    return jsonify({"result":result})
-
-def Position(id_password, pos_x, pos_y):
-    conn = sqlite3.connect('databases/profile_database.db')
-    cur_x=conn.cursor()
-
-    req=("UPDATE users SET position_x =? WHERE id_password = ?")
-    cur_x.execute(req, (pos_x, id_password))
-    conn.commit()
-    cur_x.close()
-
-    cur_y=conn.cursor()
-
-    req=("UPDATE users SET position_y =? WHERE id_password = ?")
-    cur_y.execute(req, (pos_y, id_password))
-    conn.commit()
-    cur_y.close()
-
-    conn.close()
-
-    return "worked"
 
 @app.route('/updateProfile', methods=['POST'])
 def updateProfile():
@@ -176,12 +148,14 @@ def updateProfile():
     data = request.get_json()
     name = data.get('name')
     password = data.get('password')
+    color = data.get('color')
+    banner_col = data.get('banner_color')
     id = data.get('id')
     # Call your Python function here
-    result = Profile(name, password, id)
+    result = Profile(name, password, color, banner_col, id)
     return jsonify({'result': result})
 
-def Profile(name, password, id):
+def Profile(name, password, color, banner_col, id):
     conn = sqlite3.connect('databases/profile_database.db')
 
     if name != "":
@@ -197,9 +171,23 @@ def Profile(name, password, id):
         cur.execute(req, (password, id))
         conn.commit()
         cur.close()
+
+    if color != "":
+        cur = conn.cursor()
+        req = "UPDATE users SET color=? WHERE id_password=?;"
+        cur.execute(req, (color, id))
+        conn.commit()
+        cur.close()
+
+    if banner_col != "":
+        cur = conn.cursor()
+        req = "UPDATE users SET banner_color=? WHERE id_password=?;"
+        cur.execute(req, (banner_col, id))
+        conn.commit()
+        cur.close()
     conn.close()
 
-    return "Updated name/passsword"
+    return "Updated name/passsword/color/banner color"
 
 @app.route('/showPeople', methods=['POST'])
 def showPeople():
@@ -259,7 +247,7 @@ def getProfileOf(mail):
     conn = sqlite3.connect('databases/profile_database.db')
     cur = conn.cursor()
     
-    req=f"SELECT name, server_id FROM users WHERE (users.mail='{mail}')"
+    req=f"SELECT name, server_id, color, banner_color FROM users WHERE (users.mail='{mail}')"
     cur.execute(req)
 
     infos = ""
@@ -522,7 +510,7 @@ def Communicate(id):
     conn = sqlite3.connect('databases/profile_database.db')
     cur = conn.cursor()
     
-    req=f"SELECT name,mail,password,server_id,position_x,position_y FROM users WHERE id_password='{id}';"
+    req=f"SELECT name,mail,password,server_id,color,banner_color,online,friend_list FROM users WHERE id_password='{id}';"
     cur.execute(req)
 
     all_infos = ""
@@ -536,7 +524,8 @@ def Communicate(id):
         return f"{str_info}"
     else:
         return f"Error-idpassword incorrect"
-    
+
+
 @app.route('/serverPeople', methods=['POST'])
 def serverPeople():
     data = request.get_json()

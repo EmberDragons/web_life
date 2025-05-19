@@ -9,12 +9,16 @@ var name_pseudo;
 var mail;
 var password;
 var server_id;
-var position_x = 500;
-var position_y = 500;
+var color = "#FFFFFF";
+var banner_color = "#FFFFFF";
+var list_friends;
 var id_password;
 
-var speed_x = 0.01;
-var speed_y = 0.01;
+var position_x=500;
+var position_y=500;
+
+var speed_x = 2;
+var speed_y = 2;
 var controller = {"a" : false,
                 "d" : false,
                 "w" : false,
@@ -37,8 +41,16 @@ function retrieveInfos() {
 }
 
 
+//update background color+caracter color too
+document.addEventListener("input", updateColor, false);
 
-
+function updateColor(event) {
+    if (document.getElementById("profile_banner_color")!=null && document.getElementById("banner")!=null){
+        document.getElementById("banner").style.backgroundColor = document.getElementById("profile_banner_color").value;
+        document.getElementById("caracter").style.backgroundColor = document.getElementById("profile_color").value;
+        document.getElementById("wrapper").style.borderColor = document.getElementById("profile_banner_color").value;
+    }
+}
 window.addEventListener("load", (event) => {
     setListServer();
     if (cookie_get('id_password') != undefined){
@@ -54,8 +66,8 @@ window.addEventListener("load", (event) => {
         setConnectedTrue();
     }
     if(document.getElementsByName("play").length!=0){
-        updatePosPlayer();
-        handleInput();
+        setInterval(function(){handleInput()},5);
+        setInterval(function(){updatePosPlayer()},5);
     }
     if ((document.getElementById("friend")) || (document.getElementById("stranger"))) {
         mail = cookie_get("mail");
@@ -92,10 +104,18 @@ function key_down_control(e) {
     controller[e.key] = true;
 }
 
+function setColorCararcter() {
+    const player_graphics = document.getElementById("player_graphics");
+    const player_name = document.getElementById("player_name");
+    if (player_graphics!=undefined){
+        player_graphics.style.backgroundColor = color;
+        player_name.innerHTML = name_pseudo;
+    }
+}
 
 function setListServer() {
     if (document.getElementById('set_list_server') != null){
-        let str_list = ""
+        let str_list = "";
         for (let nb=1;nb<max_server+1;nb++){
             str_list += "<div class='list_server'> <span class='server_name'>Server "+nb.toString()+"</span> <button class='join_button' onclick='joinServer("+nb.toString()+")'>Join</button> <span class='people' id='people_nb_"+nb.toString()+"'>12/30</span> </div>";
         }
@@ -134,7 +154,7 @@ function getAllServerPeople(){
         console.error('Error:', error);
     });
 
-    setTimeout(getAllServerPeople, 1500);
+    setTimeout(getAllServerPeople, 1500);   
 }
 
 function setPeopleShow(){
@@ -220,6 +240,7 @@ function remove_friend() {
 }
 
 function see_profile(pers_mail) {
+    console.log(pers_mail);
     var expiration_date=new Date(Date.now()+20*1000);
     document.cookie = `mail_seeing=${pers_mail}; ${expiration_date}`;
     //if friend...
@@ -247,26 +268,32 @@ function is_friend(mail) {
 }
 
 function setProfileStranger() {
+    console.log(profile_shown["name"]);
+    document.getElementById("wrapper").style.borderColor = profile_shown["banner_color"];
+    document.getElementById('caracter').style.backgroundColor=profile_shown["color"];
+    document.getElementById('banner').style.backgroundColor=profile_shown["banner_color"];
     document.getElementById("others_profile").innerHTML=
         ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'>" +
-                "<h2 class='profile_name' id='profile_name'>  "+profile_shown["name"]+"</h2>" +
-                "<button class='profile_other_button' onclick='add_friend()'> <img class='profile_other_name_image' src='https://icons.hackclub.com/api/icons/white/friend' style='width:45px;'></button>"+
-                "<p class='profile_mail' id='profile_mail'>" +profile_shown["mail"]+ "</p>"+
-                "<p class='profile_server' id ='profile_server'> Server "+profile_shown["server"]+" </p>");
+        "<h2 class='profile_name' id='profile_name'>  "+profile_shown["name"]+"</h2>" +
+        "<button class='profile_other_button' onclick='add_friend()'> <img class='profile_other_name_image' src='https://icons.hackclub.com/api/icons/white/friend' style='width:45px;'></button>"+
+        "<p class='profile_mail' id='profile_mail'>" +profile_shown["mail"]+ "</p>"+
+        "<p class='profile_server' id ='profile_server'> Server "+profile_shown["server"]+" </p>");
 }
 
 function setProfileFriend() {
+    document.getElementById("wrapper").style.borderColor = profile_shown["banner_color"];
+    document.getElementById('caracter').style.backgroundColor=profile_shown["color"];
+    document.getElementById('banner').style.backgroundColor=profile_shown["banner_color"];
     document.getElementById("others_profile").innerHTML=
         ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'>" +
-                "<h2 class='profile_name' id='profile_name'>  "+profile_shown["name"]+"</h2>" +
-                "<button class='profile_other_button_remove' onclick='remove_friend()'> <img class='profile_other_name_image_remove' src='https://icons.hackclub.com/api/icons/red/member-remove' style='width:45px;'></button>"+
-                "<p class='profile_mail' id='profile_mail'>" +profile_shown["mail"]+ "</p>"+
-                "<p class='profile_server' id ='profile_server'> Server "+profile_shown["server"]+" </p>");
+        "<h2 class='profile_name' id='profile_name'>  "+profile_shown["name"]+"</h2>" +
+        "<button class='profile_other_button_remove' onclick='remove_friend()'> <img class='profile_other_name_image_remove' src='https://icons.hackclub.com/api/icons/red/member-remove' style='width:45px;'></button>"+
+        "<p class='profile_mail' id='profile_mail'>" +profile_shown["mail"]+ "</p>"+
+        "<p class='profile_server' id ='profile_server'> Server "+profile_shown["server"]+" </p>");
 }
 
 function cookie_get(param){
     let infos = document.cookie.split(";");
-    let to_return;
     for (let part of infos){
         part=part.trim()
         if (part.startsWith(param)){
@@ -294,6 +321,8 @@ function GetProfile(mail) {
         profile_shown["mail"]=mail;
         profile_shown["name"]=all_datas[0];
         profile_shown["server"]=all_datas[1];
+        profile_shown["color"]=all_datas[2];
+        profile_shown["banner_color"]=all_datas[3];
         is_friend(mail).then(isFriend => {
             if (isFriend == "True") {
                 setProfileFriend();
@@ -317,24 +346,57 @@ function logOut() {
 
 function setProfile() {
     document.getElementById("profile").innerHTML="<img src='https://icons.hackclub.com/api/icons/white/profile-fill' style='position: relative; top:4px; height:22px; overflow: hidden;'>"+name_pseudo;
-    if (document.getElementById("profile_name")!=null){
-        document.getElementById("profile_name").innerHTML=name_pseudo;
+    if (document.getElementById("others_profile")==null){
+        if (document.getElementById("profile_name")!=null){
+            document.getElementById("profile_name").innerHTML=name_pseudo;
+        }
+        if (document.getElementById("profile_mail")!=null){
+            document.getElementById("profile_mail").innerHTML=mail;
+        }
+        if (document.getElementById("profile_server")!=null){
+            document.getElementById("profile_server").innerHTML="Server "+server_id;
+        }
+        if (document.getElementById("list_friends")!=null){
+            setFriendList();
+        }
+        if (document.getElementById("caracter")!=null){
+            setColors();
+        }
     }
-    if (document.getElementById("profile_mail")!=null){
-        document.getElementById("profile_mail").innerHTML=mail;
+}
+
+function setFriendList() {
+    const list = list_friends.split(";");
+    var show_list = "";
+
+    for (let nb in list){
+        var virg = ",";
+        if (nb == 0){
+            virg="";
+        }
+        if (list[nb].trim() != ""){
+            show_list+=virg+"<button class='friend_name' onclick='see_profile("+'"'+list[nb].trim()+'"'+")'>"+list[nb].trim()+"</button>";
+        }
     }
-    if (document.getElementById("profile_server")!=null){
-        document.getElementById("profile_server").innerHTML="Server "+server_id;
-    }
+    console.log(show_list);
+    document.getElementById('list_friends').innerHTML = show_list;
+}
+
+function setColors() {
+    document.getElementById("wrapper").style.borderColor = banner_color;
+    document.getElementById('caracter').style.backgroundColor = color;
+    document.getElementById('banner').style.backgroundColor = banner_color;
 }
 function setLogin() {
     document.getElementById("profile").innerHTML="<img src='https://icons.hackclub.com/api/icons/white/profile-fill' style='position: relative; top:4px; height:22px; overflow: hidden;'>"+"Log In";
 }
 
 function setProfileShow() {
-    if (document.getElementById("profile_name")!= null && document.getElementById("profile_password")!=null){
+    if (document.getElementById("profile_name")!= null && document.getElementById("profile_password")!=null&& document.getElementById("profile_color")!=null&& document.getElementById("profile_banner_color")!=null){
         let p_name = document.getElementById("profile_name").value;
         let pass = document.getElementById("profile_password").value;
+        let col = document.getElementById("profile_color").value;
+        let banner_col = document.getElementById("profile_banner_color").value;
 
         //set the new name and password
         //send to the database the mail and password to check if it connects
@@ -345,7 +407,7 @@ function setProfileShow() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name : p_name, password : pass, id : id_password})
+            body: JSON.stringify({ name : p_name, password : pass, color : col, banner_color : banner_col, id : id_password})
         })
         .then(response => response.json())
         .then(data => {
@@ -359,7 +421,7 @@ function setProfileShow() {
 
 
     document.getElementById("modifie_profile").innerHTML=
-        ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'> "
+        ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px;'> "
         +"<h2 class='profile_name' id='profile_name'> "+name_pseudo+" </h2>"
         +"<button class='profile_button' onclick='setProfileModifie()'> <img class='profile_name_image' src='https://icons.hackclub.com/api/icons/white/edit' style='width:45px;'></button> "
         +"<p class='profile_mail' id='profile_mail'> "+ mail +" </p>"
@@ -371,7 +433,9 @@ function setProfileShow() {
 function setProfileModifie() {
 
     document.getElementById("modifie_profile").innerHTML=
-        ("<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'> "
+        ("<input type='color' value='"+banner_color+"' id='profile_banner_color' style='position:absolute;right:10px;top:135px;'>"
+        +"<input type='color' value='"+color+"' id='profile_color' style='width: 30px;height: 25px;position:absolute;left:100px;top:200px;'>"
+        +"<img src='https://icons.hackclub.com/api/icons/grey/profile-fill' style='position:absolute; left: 35px; top:38px; width:60px'> "
         +"<input class='profile_name' id='profile_name' placeholder="+name_pseudo+" style='height:34px; width:200px; font-size: 32px; color:black;'>"
         +"<button class='profile_button' onclick='setProfileShow(event)'> <img class='save_profile' src='https://icons.hackclub.com/api/icons/white/post' style='padding-top: 2px; padding-bottom: -2px; width:45px;'></button>" 
         +"<p class='profile_mail' id='profile_mail'> "+ mail +" </p>"
@@ -570,7 +634,6 @@ function handleInput(){
         }
     }
     movePlayer(position_x-list[0]+list[1], position_y-list[2]+list[3]);
-    setInterval(function(){handleInput()},50);
 }
 
 function movePlayer(x, y, name='player'){
@@ -626,15 +689,15 @@ function updatePosPlayer() {
         player.style.left = position_x + "px";
         player.style.top = position_y + "px";
     }
-    setInterval(function(){updatePosPlayer()},50);
 }
 
 function checkForOutOfBounds(pos_x, pos_y) {
-    const delta = 50;
-    if (pos_x>window.innerWidth-delta||pos_x<delta){
+    const delta_x = 3/100;
+    const delta_y = 8/100;
+    if (pos_x+delta_x*window.innerWidth>window.innerWidth-delta_x*window.innerWidth||pos_x<delta_x*window.innerWidth){
         return true;
     }
-    if (pos_y>window.innerHeight-delta||pos_y<delta){
+    if (pos_y+delta_y*window.innerHeight>window.innerHeight-delta_y*window.innerHeight||pos_y<delta_y*window.innerHeight){
         return true;
     }
     return false;
@@ -642,24 +705,6 @@ function checkForOutOfBounds(pos_x, pos_y) {
 
 //COMMUNICATION
 
-function set_position() {
-    if (id_password!=undefined) {
-        fetch('http://localhost:5000/updatePosition', {
-            method: 'Post',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({id_password : id_password, position_x : position_x, position_y : position_y})
-        })
-        .then(response = response.json())
-        .then( data => {
-            console.log(data);
-        })
-        .catch( error => {
-            console.error(error);
-        })
-    }
-}
 
 function communicate_get() {
     if (id_password != undefined){
@@ -683,11 +728,15 @@ function communicate_get() {
                 mail = infos[1];
                 password = infos[2];
                 server_id = infos[3];
-                position = (infos[4],infos[5]);
+                color = infos[4].trim();
+                banner_color = infos[5].trim();
                 online = infos[6];
+                list_friends = infos[7];
                 setProfile();
+                if (document.getElementById("player")) {
+                    setColorCararcter();
+                }
             }
-
         })
         .catch(error => {
             console.error('Error:', error);

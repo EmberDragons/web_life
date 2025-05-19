@@ -13,13 +13,15 @@
     </header>
     <body>
         <br><br>
-        <div class = "wrapper">
-            <div class="background_color"></div>
+        <div class = "wrapper" id= "wrapper">
+            <div class="banner" id="banner"></div>
+            <div class="caracter_color" id="caracter"></div>
             <div id="modifie_profile">
-                <img src="https://icons.hackclub.com/api/icons/grey/profile-fill" style="position:absolute; left: 35px; top:38px; width:60px"> 
+                <img src="https://icons.hackclub.com/api/icons/grey/profile-fill" style="position:absolute; left: 35px; top:38px; width:60px;"> 
                 <h2 class="profile_name" id="profile_name">  Name</h2>
                 <button class="profile_button" onclick="setProfileModifie()"> <img class="profile_name_image" src="https://icons.hackclub.com/api/icons/white/edit" style="width:45px;"></button> 
                 <p class="profile_mail" id="profile_mail"> mail@gmail.com </p>
+                <div id="list_friends" style="position:absolute;right:60px;top:180px; width:250px;"><button class='friend_name' onclick='see_profile("none")'> none</button></div>
                 <p class="profile_server" id ="profile_server"> Server 0 </p>
                 <button class="log_out_button" onclick="logOut()"> <img class="log_out_image" src="https://icons.hackclub.com/api/icons/white/door-leave" style="width:45px;"></button> 
 
