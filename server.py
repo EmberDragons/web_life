@@ -7,7 +7,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import json
-
+import time as Time
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # This will enable CORS for all routes
@@ -18,18 +18,23 @@ SMTP_PORT = 587
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
+SERVER_NUMBER = 8
+SERVER_LIST = []
+
+
 
 @app.route('/changeServer', methods=['POST'])
 def changeServer():
     data = request.get_json()
     server_id = data.get('server_id')
+    mail = data.get('mail')
     id_password = data.get('id_password')
     # Call your Python function here
-    result = changeServerId(server_id, id_password)
+    result = changeServerId(server_id, id_password, mail)
     return jsonify({'result': result})
 
 
-def changeServerId(id, id_password):
+def changeServerId(id, id_password, mail):
     conn = sqlite3.connect('databases/profile_database.db')
     cur = conn.cursor()
     
@@ -51,6 +56,7 @@ def changeServerId(id, id_password):
         conn.commit()
         cur.close()
         conn.close()
+        test = removePeopleToServer(mail, id)
         return f"set server id to {id}"
 
 @app.route('/login', methods=['POST'])
@@ -529,33 +535,132 @@ def Communicate(id):
 @app.route('/serverPeople', methods=['POST'])
 def serverPeople():
     data = request.get_json()
-    id = data.get('max_server_id')
     # Call your Python function here
-    result = getNbServerPeople(id)
+    result = getNbServerPeople()
     return jsonify({'result': result})
 
-def getNbServerPeople(max_server_id):
-    conn = sqlite3.connect('databases/profile_database.db')
-    
+def getNbServerPeople():
     nbr_people = ""
-    for i in range(1,max_server_id+1):
-        cur = conn.cursor()
-        req=f"SELECT count(*) FROM users WHERE server_id='{i}' and online='True';"
-        cur.execute(req)
 
-        all_infos = ""
-        for elt in cur:
-            all_infos+=(str(elt).replace('[','').replace(']','').replace('(','').replace(')','').replace("'",''))
-
-        nbr_people+=str(all_infos.split(',')).replace('[','').replace(']','').replace('(','').replace(')','').replace("'",'')
-        cur.close()
-
-    conn.close()
+    for serv in SERVER_LIST:
+        per_server = 0
+        for mail in serv:
+            per_server+=1
+        nbr_people+=str(per_server)+','
+    
     if nbr_people != "":
         return f"{nbr_people}"
     else:
         return f"Error-server_id incorrect"
 
+
+@app.route('/updatePos', methods=['POST'])
+def updatePos():
+    # Parse the raw data from the request
+    raw_data = request.data.decode('utf-8')
+    data = json.loads(raw_data)  # Convert the raw string to JSON
+
+    mail = data.get('mail')
+    server_id = int(data.get('server_id'))
+    pos_x = data.get('pos_x')
+    pos_y = data.get('pos_y')
+
+    if not mail:
+        return jsonify({'error': 'Missing mail'}), 400
+    
+    result = Position(mail, server_id, pos_x, pos_y)
+    return jsonify({'result': result})
+
+def Position(mail, server_id, pos_x, pos_y):
+    our_serv = SERVER_LIST[server_id-1]
+    if mail in our_serv:
+        pers = our_serv[mail]
+        pers["pos_x"] = pos_x
+        pers["pos_y"] = pos_y
+        return "updated"
+    else:
+        return "not in data_base"
+
+
+#multiplayer here
+@app.route('/multiplayer', methods=['POST'])
+def multiplayer():
+    data = request.get_json()
+    server_id = int(data.get('server_id'))
+    # Call your Python function here
+    result = SendMultInfos(server_id)
+    return jsonify({'result': result})
+
+def SendMultInfos(server_id):
+    #access local list
+    list_people = ""
+    our_serv = SERVER_LIST[server_id-1]
+    for mail in our_serv:
+        pers = our_serv[mail]
+        str_pers = mail+","+str(pers["name"])+","+str(pers["color"])+","+str(pers["pos_x"])+","+str(pers["pos_y"])
+        list_people+=str_pers+"|"
+
+    return list_people
+
+
+def setServersUp():
+    for _ in range(SERVER_NUMBER):
+        SERVER_LIST.append({})
+
+
+@app.route('/addToList', methods=['POST'])
+def addToList():
+    data = request.get_json()
+    name = data.get('name')
+    mail = data.get('mail')
+    server_id = int(data.get('server_id'))
+    color = data.get('color')
+    # Call your Python function here
+    result = addPeopleToServer(mail, server_id, name, color)
+    return jsonify({'result': result})
+
+def addPeopleToServer(mail, server_id, name, color):
+    our_serv = SERVER_LIST[server_id-1]
+    if mail not in our_serv:
+        our_serv[mail] = {}
+        pers = our_serv[mail]
+        pers["name"] = name
+        pers["color"] = color
+        pers["pos_x"] = 500
+        pers["pos_y"] = 500
+    return "worked"
+
+@app.route('/removeToList', methods=['POST'])
+def removeToList():
+    try:
+        # Parse the raw data from the request
+        raw_data = request.data.decode('utf-8')
+        data = json.loads(raw_data)  # Convert the raw string to JSON
+
+        mail = data.get('mail')
+
+        if not mail:
+            return jsonify({'error': 'Missing id_password'}), 400
+        
+        result = removePeopleFromAllServer(mail)
+        return jsonify({'result': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def removePeopleFromAllServer(mail):
+    for serv in SERVER_LIST:
+        if mail in serv:
+            serv.pop(mail)
+    print(SERVER_LIST)
+
+def removePeopleToServer(mail, server_id):
+    our_serv = SERVER_LIST[server_id-1]
+    for serv in SERVER_LIST:
+        if serv != our_serv:
+            if mail in serv:
+                serv.pop(mail)
+    return "worked"
 
 def getDatabaseCodes():
     codes=[]
@@ -585,7 +690,6 @@ def generateKey():
     return code
 
 if __name__ == '__main__':
-
+    setServersUp()
     app.run(debug=True)
-
 

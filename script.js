@@ -17,8 +17,8 @@ var id_password;
 var position_x=500;
 var position_y=500;
 
-var speed_x = 2;
-var speed_y = 2;
+var speed_x = 4;
+var speed_y = 4;
 var controller = {"a" : false,
                 "d" : false,
                 "w" : false,
@@ -27,7 +27,8 @@ var controller = {"a" : false,
 
 //multiplayer
 var profile_shown = {};
-
+var dict_people_serv = {};
+const move_mult_speed = 4;
 
 //cookies XD
 
@@ -66,8 +67,10 @@ window.addEventListener("load", (event) => {
         setConnectedTrue();
     }
     if(document.getElementsByName("play").length!=0){
-        setInterval(function(){handleInput()},5);
-        setInterval(function(){updatePosPlayer()},5);
+        setInterval(function(){handleInput()},20);
+        setInterval(function(){updatePosPlayer()},20);
+        setInterval(function(){move_all_multiplayer()},20);
+        setInterval(function(){multiplayer_get()},70);
     }
     if ((document.getElementById("friend")) || (document.getElementById("stranger"))) {
         mail = cookie_get("mail");
@@ -82,8 +85,8 @@ window.addEventListener("beforeunload", (event) => {
         const data = JSON.stringify({ id_password: id_password });
         navigator.sendBeacon(url, data);
         
-        const url2 = 'http://localhost:5000/updatePosition';
-        const data2 = JSON.stringify({ id_password: id_password,  position_x: position_x, position_y: position_y});
+        const url2 = 'http://localhost:5000/removeToList';
+        const data2 = JSON.stringify({ mail:mail});
         navigator.sendBeacon(url2, data2);
     }
 });
@@ -168,7 +171,7 @@ function joinServer(server_id){
         fetch('http://localhost:5000/changeServer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ server_id: server_id,  id_password : id_password})
+            body: JSON.stringify({ server_id: server_id,  id_password : id_password, mail:mail})
         })
         .then(response => response.json())
         .then(data => {
@@ -178,6 +181,7 @@ function joinServer(server_id){
         .catch(error => {
             console.error('Error:', error);
         });
+        
     }
     else{
         open("login.html", "_self");
@@ -425,6 +429,7 @@ function setProfileShow() {
         +"<h2 class='profile_name' id='profile_name'> "+name_pseudo+" </h2>"
         +"<button class='profile_button' onclick='setProfileModifie()'> <img class='profile_name_image' src='https://icons.hackclub.com/api/icons/white/edit' style='width:45px;'></button> "
         +"<p class='profile_mail' id='profile_mail'> "+ mail +" </p>"
+        +"<div id='list_friends' style='position:absolute;right:60px;top:180px; width:250px;'><button class='friend_name' onclick='see_profile('none')'> none</button></div>"
         +"<p class='profile_server' id='profile_server'> Server "+server_id+" </p>"
         +"<button class='log_out_button' onclick='logOut()'> <img class='log_out_image' src='https://icons.hackclub.com/api/icons/white/door-leave' style='width:45px;'></button> ");
 
@@ -636,25 +641,20 @@ function handleInput(){
     movePlayer(position_x-list[0]+list[1], position_y-list[2]+list[3]);
 }
 
-function movePlayer(x, y, name='player'){
-    if (name == "player"){
-        if (x!=position_x && y!=position_y){
-            mid_x=(x-position_x)*0.71;
-            mid_y=(y-position_y)*0.71;
-            if (checkForOutOfBounds(position_x+mid_x,position_y+mid_y) == false) {
-                position_x = position_x+mid_x;
-                position_y = position_y+mid_y;
-            }
-        }
-        else{
-            if (checkForOutOfBounds(x,y) == false) {
-                position_x = x;
-                position_y = y;
-            }
+function movePlayer(x, y){
+    if (x!=position_x && y!=position_y){
+        mid_x=(x-position_x)*0.71;
+        mid_y=(y-position_y)*0.71;
+        if (checkForOutOfBounds(position_x+mid_x,position_y+mid_y) == false) {
+            position_x = position_x+mid_x;
+            position_y = position_y+mid_y;
         }
     }
-    else {
-        //we are moving a another player
+    else{
+        if (checkForOutOfBounds(x,y) == false) {
+            position_x = x;
+            position_y = y;
+        }
     }
 }
 /*
@@ -725,7 +725,7 @@ function communicate_get() {
                 let str_res =data.result.replace('(','').replace(')','').replace("'",'');
                 infos=str_res.split(",");
                 name_pseudo = infos[0];
-                mail = infos[1];
+                mail = infos[1].trim();
                 password = infos[2];
                 server_id = infos[3];
                 color = infos[4].trim();
@@ -736,10 +736,161 @@ function communicate_get() {
                 if (document.getElementById("player")) {
                     setColorCararcter();
                 }
+                add_to_db()
+                setInterval(function(){set_position_db()},300);
             }
         })
         .catch(error => {
             console.error('Error:', error);
         });
+    }
+}
+
+
+//MULTIPLAYER communication
+
+function set_position_db() {
+    if (mail){
+        fetch('http://localhost:5000/updatePos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ mail : mail, server_id : server_id, pos_x:position_x, pos_y : position_y})
+        })
+        .then(response => response.json())
+        .then(data =>{
+            if (data.result == "not in data_base"){
+                add_to_db()
+            }
+        });
+    }
+}
+
+function add_to_db() {
+    if (mail){
+        fetch('http://localhost:5000/addToList', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ mail:mail, name:name_pseudo, server_id:server_id, color:color})
+        })
+        .then(response => response.json())
+        .then(data =>{
+        });
+    }
+}
+
+function multiplayer_get() {
+    if (server_id != undefined){
+        //send to the database the id_password
+        fetch('http://localhost:5000/multiplayer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ server_id : server_id})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result == "Error-server_id incorrect"){
+                console.error(data.result, server_id);
+            }
+            else{
+                var all_data = data.result.split('|');
+                for (let string in all_data){
+                    let str_res = all_data[string].replace('(','').replace(')','').replace("'",'');
+                    let mult_infos=str_res.split(",");
+                    let mail_pers = mult_infos[0].toString().trim();
+                    let name_pers = mult_infos[1];
+                    let color_pers = mult_infos[2];
+                    let position_x_pers = parseFloat(mult_infos[3]);
+                    let position_y_pers = parseFloat(mult_infos[4]);
+
+                    if (mail_pers != mail.trim() && mail_pers!=""){
+                        if (!(mail_pers in dict_people_serv)){
+                            add_multiplayer(mail_pers, name_pers, color_pers);
+                        }
+                        else{
+                            let posi_x = dict_people_serv[mail_pers].pos_x;
+                            let posi_y = dict_people_serv[mail_pers].pos_y;
+                            let infos_pers = {"name":name_pers, "color":color_pers, "target_pos_x" : position_x_pers, "target_pos_y" : position_y_pers, "pos_x":posi_x, "pos_y":posi_y, "time":0};
+                            
+                            dict_people_serv[mail_pers] = infos_pers;
+                        }
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+
+function add_multiplayer(mail_pers, name, color) {
+    //visual
+    let text = "<div id='"+mail_pers+"' class='player_main'> <img src='https://icons.hackclub.com/api/icons/grey/down-caret' alt='Hack Club' class='player_arrow'><button class='player_name' id='"+mail_pers.trim()+"_name' onclick='see_profile("+'"'+mail_pers+'"'+")'>"+name+"</button><div class='player_graphics' id='"+mail_pers.trim()+"_graphics'></div></div>";
+    document.getElementById("Canvas").innerHTML=document.getElementById("Canvas").innerHTML+text;
+    const player_graphics = document.getElementById(mail_pers.trim()+"_graphics");
+    player_graphics.style.backgroundColor=color;
+    //the rest
+    let infos_pers = {"name":name, "color":color, "target_pos_x" : 500, "target_pos_y" : 500, "pos_x":500, "pos_y":500, "time" : 0};
+    dict_people_serv[mail_pers] = infos_pers;
+}
+
+function remove_multiplayer(n_mail) {
+    //visual remove
+    console.log(n_mail);
+    const playerDiv = document.getElementById(n_mail);
+    if (playerDiv) {
+        playerDiv.remove();
+    }
+    //remove complete
+    delete dict_people_serv[n_mail];
+}
+
+function move_all_multiplayer() {
+    for (let n_mail in dict_people_serv){
+        dict_people_serv[n_mail]["time"]+=0.005;
+        if (dict_people_serv[n_mail]["time"]>=0.4){
+            //we remove it
+            remove_multiplayer(n_mail);
+        }
+        else{
+            let player = document.getElementById(n_mail);
+            let x_dir = (parseFloat(dict_people_serv[n_mail]["target_pos_x"]) - parseFloat(dict_people_serv[n_mail]["pos_x"]));
+            let y_dir = (parseFloat(dict_people_serv[n_mail]["target_pos_y"]) - parseFloat(dict_people_serv[n_mail]["pos_y"]));
+            if ((x_dir**2)**0.5>move_mult_speed){
+                if (x_dir>0){
+                    x_dir=move_mult_speed;
+                }
+                else{
+                    x_dir=-move_mult_speed;
+                }
+            }
+            if ((y_dir**2)**0.5>move_mult_speed){
+                if (y_dir>0){
+                    y_dir=move_mult_speed;
+                }
+                else{
+                    y_dir=-move_mult_speed;
+                }
+            }
+            let x = dict_people_serv[n_mail]["pos_x"]+x_dir;
+            let y = dict_people_serv[n_mail]["pos_y"]+y_dir;
+            dict_people_serv[n_mail].pos_x=x;
+            dict_people_serv[n_mail].pos_y=y;
+
+            updatePosMultiplayer(player, x, y);
+        }
+    }
+}
+
+function updatePosMultiplayer(player, x, y) {
+    if (player!=undefined){
+        player.style.left = (x).toString() + "px";
+        player.style.top = (y).toString() + "px";
     }
 }
