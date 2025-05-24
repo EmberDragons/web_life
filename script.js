@@ -922,9 +922,36 @@ function updatePosMultiplayer() {
         let y = dict_people_serv[n_mail]["pos_y"]+y_dir;
         dict_people_serv[n_mail].pos_x=x;
         dict_people_serv[n_mail].pos_y=y;
+
         if (player!=undefined){
             player.style.left = (x).toString() + "px";
             player.style.top = (y).toString() + "px";
+            
+            const player_graphics = document.getElementById(n_mail.trim()+"_graphics");
+            if (player_graphics != undefined && (x_dir !=0 || y_dir != 0)){
+                if (player_graphics.style.opacity == 0.99){
+                    player_graphics.style.zoom=(parseFloat(player_graphics.style.zoom)+0.01).toString();
+                    player_graphics.style.rotate=("2deg");
+                    if (player_graphics.style.zoom>1.05){
+                        player_graphics.style.opacity = 1;
+                    }
+                }
+                else{
+                    player_graphics.style.zoom=(parseFloat(player_graphics.style.zoom)-0.01).toString();
+                    player_graphics.style.rotate=("-2deg");
+                    if (player_graphics.style.zoom<0.95){
+                        player_graphics.style.opacity = 0.99;
+                    }
+                }
+                if (player_graphics.style.opacity == ""){
+                    player_graphics.style.opacity = 0.99;
+                }
+                if (player_graphics.style.zoom == ""){
+                    player_graphics.style.zoom=1;
+                }
+                console.log("opacity " + player_graphics.style.opacity);
+                console.log("zoom " + player_graphics.style.zoom);
+            }
         }
     }
 }
