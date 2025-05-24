@@ -30,6 +30,10 @@ var profile_shown = {};
 var dict_people_serv = {};
 const move_mult_speed = 4;
 
+//emojis
+var emoji_dict={}
+var wait_next_date;
+
 //cookies XD
 
 function retrieveInfos() {
@@ -72,6 +76,8 @@ window.addEventListener("load", (event) => {
         setInterval(function(){move_all_multiplayer()},80);
         setInterval(function(){multiplayer_get()},80);
         setInterval(function(){updatePosMultiplayer()},25);
+        setInterval(function(){removeEmojis()},10000);
+        setInterval(function(){getEmojis()},500);
     }
     if ((document.getElementById("friend")) || (document.getElementById("stranger"))) {
         mail = cookie_get("mail");
@@ -984,3 +990,90 @@ function updatePosMultiplayer() {
 }
 
 // multiplayer emojis
+
+function addEmoji(nb) {
+    if (wait_next_date == undefined || Date.now()-wait_next_date>=2000){
+        wait_next_date=Date.now();
+        var code = document.getElementById(nb).innerHTML;
+        showEmoji(code, Date.now());
+        //send to the server the emoji
+        fetch('http://localhost:5000/addEmojiList', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code : code, date:Date.now(), pos_x:position_x, pos_y:position_y})
+        })
+        .then(response => response.json())
+        .then(data => {
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+
+function getEmojis() {
+    //send to the server the emoji
+    fetch('http://localhost:5000/getEmojiList', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => { 
+        if (data.result != ""){
+            var all_emojis = data.result.split("|");
+            for (let emoji in all_emojis){
+                if (all_emojis[emoji] != ''){
+                    let emoji_infos = all_emojis[emoji].split(',');
+                    let code = emoji_infos[0];
+                    let date = emoji_infos[1];
+                    let x = emoji_infos[2];
+                    let y = emoji_infos[3];
+                    showEmoji(code, date, x, y);
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function showEmoji(code, date, x=position_x, y=position_y) {
+    var not_in = true;
+    for (let elt in emoji_dict){
+        if (date == elt){
+            not_in=false;
+        }
+    }
+    if (not_in){
+        document.getElementById("emoji_manager").insertAdjacentHTML('beforeend',"<div id='emoji_"+date+"'class='emoji_show'>"+code+"</div>");
+        document.getElementById("emoji_"+date).style.position = "absolute";
+        document.getElementById("emoji_"+date).style.left = x+"px";
+        document.getElementById("emoji_"+date).style.top = y+"px";
+        document.getElementById("emoji_"+date).style.animation = "emoji_fade 3s linear forwards";
+        
+        emoji_dict[date]=(["emoji_"+date]);
+    }
+}
+
+function removeEmojis() {
+    var emoji_to_keep = {};
+    for (let elt in emoji_dict){
+        if (Date.now()-elt>=3000){
+            let code = document.getElementById(emoji_dict[elt]);
+            if (code) {
+                code.remove();
+            }
+        }
+        else{
+            emoji_to_keep[elt] = emoji_dict[elt];
+        }
+    }
+    emoji_dict=emoji_to_keep;
+}

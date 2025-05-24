@@ -8,6 +8,7 @@ from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import json
 import time as Time
+import threading
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # This will enable CORS for all routes
@@ -20,6 +21,7 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 SERVER_NUMBER = 8
 SERVER_LIST = []
+EMOJI_LIST = []
 
 
 
@@ -332,7 +334,6 @@ def ridFriend(id_password, mail):
         conn.close()
         return f"Error - couldn't remove"
     else:
-        print(returned_val)
         for elt in returned_val.split(";"):
             n_elt=elt.replace('"',"").replace("'","").replace(')',"").replace('(',"").replace(";","").replace(",","")
             if '@' in n_elt:
@@ -652,7 +653,6 @@ def removePeopleFromAllServer(mail):
     for serv in SERVER_LIST:
         if mail in serv:
             serv.pop(mail)
-    print(SERVER_LIST)
 
 def removePeopleToServer(mail, server_id):
     our_serv = SERVER_LIST[server_id-1]
@@ -695,6 +695,41 @@ def checkPingDatabase(mail):
     cur.close()
     conn.close()
     return "worked"
+
+@app.route('/addEmojiList', methods=['POST'])
+def addEmojiList():
+    data = request.get_json()
+    code = data.get('code')
+    date = data.get('date')
+    x = data.get('pos_x')
+    y = data.get('pos_y')
+    # Call your Python function here
+    result = addEmoji(code, date, x, y)
+    return jsonify({'result': result})
+
+def addEmoji(code, date, x, y):
+    EMOJI_LIST.append([code, date, x, y])
+    timer = threading.Timer(1.0, removeEmoji, args=(date,))
+    timer.start()
+    return "here"
+
+@app.route('/getEmojiList', methods=['POST'])
+def getEmojiList():
+    data = request.get_json()
+    # Call your Python function here
+    result = getEmoji()
+    return jsonify({'result': result})
+
+def getEmoji():
+    list_str=""
+    for elt in EMOJI_LIST:
+        list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+'|'
+    return list_str
+
+def removeEmoji(date):
+    for emoji in EMOJI_LIST:
+        if emoji[1] == date:
+            EMOJI_LIST.remove(emoji)
 
 def getDatabaseCodes():
     codes=[]

@@ -8,6 +8,28 @@
     font-style: bold;
 }   
 
+@keyframes emoji_fade {
+    0% {
+        transform: rotate(5deg) translateX(0px) translateY(0px);
+        opacity: 75%;
+    }
+    20%{
+        transform: rotate(-5deg) translateX(20px) translateY(-40px);
+    }
+    40%{
+        transform: rotate(5deg) translateX(-20px) translateY(-80px);
+    }
+    60%{
+        transform: rotate(-5deg) translateX(20px) translateY(-120px);
+    }
+    80%{
+        transform: rotate(5deg) translateX(-20px) translateY(-160px);
+    }
+    100% {
+        transform: rotate(-5deg) translateX(0px) translateY(-200px);
+        opacity: 0%;
+    }
+}
 
 @keyframes zoom_button {
     0% {
@@ -765,7 +787,7 @@ input:not(:placeholder-shown) ~ label {
 
 .side_bar {
     text-align: center;
-    z-index: 1000;
+    z-index: 1001;
     width: 80px;
     height: 500px;
     position: fixed;              /* Fixed to viewport */
@@ -790,43 +812,70 @@ input:not(:placeholder-shown) ~ label {
 }
 .side_emojis_button .text{
     position: relative;              /* Fixed to viewport */
-    right: 12.5px;
-    bottom: 12.5px;
+    right: 21%;
+    bottom: 5%;
+    transition: 0.2s;
+}
+.side_emojis_button :hover {
+    cursor:pointer;
+    font-size: 65px;
 }
 
 .side_emojis_button_image {
     position: relative;              /* Fixed to viewport */
-    font-size: 60px;
     margin-top: 20px;
-    width:70px;
-    height:70px;
+    width:60px;
+    height:60px;
     border-width: 0px;
     background:#ad717100;
+}
+.side_emojis_button_image:hover .image{
+    cursor:pointer;
+    width: 70px;
+    height: 70px;
+    transition: 0.2s;
 }
 
 .side_emojis_button_image .image{
     position: relative;              /* Fixed to viewport */
     right: 6.1px;
     bottom: 6.1px;
-    width:70px;
-    height:70px;
+    width:60px;
+    height:60px;
+    border-radius: 10px;
+    border: 1px solid rgba(48, 48, 48, 0.922);
 }
 
 
 .side_emojis_button_swap {
-    position: relative;              /* Fixed to viewport */
+    color: #000000;
+    position: absolute;              /* Fixed to viewport */
     font-size: 40px;
-    margin-top: -8px;
     width:40px;
     height:40px;
+    right:20px;
+    bottom:0px;
     border-width: 0px;
-    background:#00000000;
+    background:#33040400;
+    transition: 1s;
+}
+.side_emojis_button_swap :hover {
+    cursor:pointer;
+    color: #23a6d5;
 }
 .side_emojis_button_swap .text{
+    transition: 1s;
     position: relative;              /* Fixed to viewport */
     right: 4px;
-    bottom: 10px;
-    opacity:80%;
+    bottom: -10px;
+    opacity:inherit;
+}
+
+/*Actual emoji on screen*/
+.emoji_show {
+    z-index: 1000;
+    font-size: 35px;
+    opacity:75%;
 }
 
 header {
