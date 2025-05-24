@@ -662,6 +662,40 @@ def removePeopleToServer(mail, server_id):
                 serv.pop(mail)
     return "worked"
 
+@app.route('/ping', methods=['POST'])
+def ping():
+    data = request.get_json()
+    server_id = int(data.get('server_id'))
+    # Call your Python function here
+    result = checkPing(server_id)
+    return jsonify({'result': result})
+
+def checkPing(server_id):
+    our_serv = SERVER_LIST[server_id-1]
+    return "worked"
+
+@app.route('/pingInsideDatabase', methods=['POST'])
+def pingInsideDatabase():
+    data = request.get_json()
+    mail = data.get('mail')
+    # Call your Python function here
+    result = checkPingDatabase(mail)
+    return jsonify({'result': result})
+
+def checkPingDatabase(mail):
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT name FROM users WHERE mail = '{mail}'"
+    cur.execute(req)
+
+    test=[]
+    for elt in cur:
+        test.append(elt)
+    cur.close()
+    conn.close()
+    return "worked"
+
 def getDatabaseCodes():
     codes=[]
     conn = sqlite3.connect('databases/profile_database.db')

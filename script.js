@@ -69,8 +69,9 @@ window.addEventListener("load", (event) => {
     if(document.getElementsByName("play").length!=0){
         setInterval(function(){handleInput()},20);
         setInterval(function(){updatePosPlayer()},20);
-        setInterval(function(){move_all_multiplayer()},20);
-        setInterval(function(){multiplayer_get()},70);
+        setInterval(function(){move_all_multiplayer()},80);
+        setInterval(function(){multiplayer_get()},80);
+        setInterval(function(){updatePosMultiplayer()},25);
     }
     if ((document.getElementById("friend")) || (document.getElementById("stranger"))) {
         mail = cookie_get("mail");
@@ -151,7 +152,6 @@ function getAllServerPeople(){
     .then(data => {
         list_server_nb = data.result.split(',');
         setPeopleShow();
-        console.log(data.result);
     })
     .catch(error => {
         console.error('Error:', error);
@@ -175,7 +175,6 @@ function joinServer(server_id){
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data.result);
             open("play.html",'_self');
         })
         .catch(error => {
@@ -244,7 +243,6 @@ function remove_friend() {
 }
 
 function see_profile(pers_mail) {
-    console.log(pers_mail);
     var expiration_date=new Date(Date.now()+20*1000);
     document.cookie = `mail_seeing=${pers_mail}; ${expiration_date}`;
     //if friend...
@@ -321,7 +319,6 @@ function GetProfile(mail) {
     .then(data => {
         let datas = data.result;
         let all_datas = datas.replace(")","").replaceAll("'","").replace("(","").split(",");
-        console.log(all_datas)
         profile_shown["mail"]=mail;
         profile_shown["name"]=all_datas[0];
         profile_shown["server"]=all_datas[1];
@@ -382,7 +379,6 @@ function setFriendList() {
             show_list+=virg+"<button class='friend_name' onclick='see_profile("+'"'+list[nb].trim()+'"'+")'>"+list[nb].trim()+"</button>";
         }
     }
-    console.log(show_list);
     document.getElementById('list_friends').innerHTML = show_list;
 }
 
@@ -609,7 +605,7 @@ function submitRegister(event) {
         }
         else{
             //success
-            console.log(data.result+'lol');
+            console.log(data.result);
         }
 
     })
@@ -782,6 +778,44 @@ function add_to_db() {
     }
 }
 
+function check_ping() {
+    var past_time = Date.now();
+    var time_elapsed = 0.0;
+    if (server_id){
+        fetch('http://localhost:5000/ping', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({server_id:server_id})
+        })
+        .then(response => response.json())
+        .then(data =>{
+            time_elapsed = Date.now()-past_time;
+            console.log('time to server : '+time_elapsed.toString());
+        });
+    }
+}
+
+function check_ping_inside_database() {
+    var past_time = Date.now();
+    var time_elapsed = 0.0;
+    if (mail){
+        fetch('http://localhost:5000/pingInsideDatabase', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({mail:mail})
+        })
+        .then(response => response.json())
+        .then(data =>{
+            time_elapsed = Date.now()-past_time;
+            console.log('time to database : '+time_elapsed.toString());
+        });
+    }
+}
+
 function multiplayer_get() {
     if (server_id != undefined){
         //send to the database the id_password
@@ -842,7 +876,6 @@ function add_multiplayer(mail_pers, name, color) {
 
 function remove_multiplayer(n_mail) {
     //visual remove
-    console.log(n_mail);
     const playerDiv = document.getElementById(n_mail);
     if (playerDiv) {
         playerDiv.remove();
@@ -854,43 +887,44 @@ function remove_multiplayer(n_mail) {
 function move_all_multiplayer() {
     for (let n_mail in dict_people_serv){
         dict_people_serv[n_mail]["time"]+=0.005;
-        if (dict_people_serv[n_mail]["time"]>=0.4){
+        if (dict_people_serv[n_mail]["time"]>=0.2){
             //we remove it
             remove_multiplayer(n_mail);
         }
         else{
-            let player = document.getElementById(n_mail);
-            let x_dir = (parseFloat(dict_people_serv[n_mail]["target_pos_x"]) - parseFloat(dict_people_serv[n_mail]["pos_x"]));
-            let y_dir = (parseFloat(dict_people_serv[n_mail]["target_pos_y"]) - parseFloat(dict_people_serv[n_mail]["pos_y"]));
-            if ((x_dir**2)**0.5>move_mult_speed){
-                if (x_dir>0){
-                    x_dir=move_mult_speed;
-                }
-                else{
-                    x_dir=-move_mult_speed;
-                }
-            }
-            if ((y_dir**2)**0.5>move_mult_speed){
-                if (y_dir>0){
-                    y_dir=move_mult_speed;
-                }
-                else{
-                    y_dir=-move_mult_speed;
-                }
-            }
-            let x = dict_people_serv[n_mail]["pos_x"]+x_dir;
-            let y = dict_people_serv[n_mail]["pos_y"]+y_dir;
-            dict_people_serv[n_mail].pos_x=x;
-            dict_people_serv[n_mail].pos_y=y;
 
-            updatePosMultiplayer(player, x, y);
         }
     }
 }
 
-function updatePosMultiplayer(player, x, y) {
-    if (player!=undefined){
-        player.style.left = (x).toString() + "px";
-        player.style.top = (y).toString() + "px";
+function updatePosMultiplayer() {
+    for (let n_mail in dict_people_serv){
+        let player = document.getElementById(n_mail);
+        let x_dir = (parseFloat(dict_people_serv[n_mail]["target_pos_x"]) - parseFloat(dict_people_serv[n_mail]["pos_x"]));
+        let y_dir = (parseFloat(dict_people_serv[n_mail]["target_pos_y"]) - parseFloat(dict_people_serv[n_mail]["pos_y"]));
+        if ((x_dir**2)**0.5>move_mult_speed){
+            if (x_dir>0){
+                x_dir=move_mult_speed+x_dir/50;
+            }
+            else{
+                x_dir=-move_mult_speed+x_dir/50;
+            }
+        }
+        if ((y_dir**2)**0.5>move_mult_speed){
+            if (y_dir>0){
+                y_dir=move_mult_speed+y_dir/50;
+            }
+            else{
+                y_dir=-move_mult_speed+y_dir/50;
+            }
+        }
+        let x = dict_people_serv[n_mail]["pos_x"]+x_dir;
+        let y = dict_people_serv[n_mail]["pos_y"]+y_dir;
+        dict_people_serv[n_mail].pos_x=x;
+        dict_people_serv[n_mail].pos_y=y;
+        if (player!=undefined){
+            player.style.left = (x).toString() + "px";
+            player.style.top = (y).toString() + "px";
+        }
     }
 }
