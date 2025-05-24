@@ -762,6 +762,73 @@ input:not(:placeholder-shown) ~ label {
     font-style: italic;
 }
 
+
+.side_bar {
+    text-align: center;
+    z-index: 1000;
+    width: 80px;
+    height: 500px;
+    position: fixed;              /* Fixed to viewport */
+    
+    bottom: 120px;
+    right: 30px;                  /* Space from right edge */
+    background: linear-gradient(rgb(90, 90, 90), rgb(113, 112, 112), rgb(56, 56, 56));
+    border: 3px solid rgba(48, 48, 48, 0.922);
+    border-radius: 50px;
+    opacity: 0.85;
+}
+
+
+.side_emojis_button {
+    position: relative;              /* Fixed to viewport */
+    font-size: 60px;
+    margin-top: 8.5px;
+    width:70px;
+    height:70px;
+    border-width: 0px;
+    background:#ad717100;
+}
+.side_emojis_button .text{
+    position: relative;              /* Fixed to viewport */
+    right: 12.5px;
+    bottom: 12.5px;
+}
+
+.side_emojis_button_image {
+    position: relative;              /* Fixed to viewport */
+    font-size: 60px;
+    margin-top: 20px;
+    width:70px;
+    height:70px;
+    border-width: 0px;
+    background:#ad717100;
+}
+
+.side_emojis_button_image .image{
+    position: relative;              /* Fixed to viewport */
+    right: 6.1px;
+    bottom: 6.1px;
+    width:70px;
+    height:70px;
+}
+
+
+.side_emojis_button_swap {
+    position: relative;              /* Fixed to viewport */
+    font-size: 40px;
+    margin-top: -8px;
+    width:40px;
+    height:40px;
+    border-width: 0px;
+    background:#00000000;
+}
+.side_emojis_button_swap .text{
+    position: relative;              /* Fixed to viewport */
+    right: 4px;
+    bottom: 10px;
+    opacity:80%;
+}
+
 header {
     position: sticky;
 }

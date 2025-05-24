@@ -681,10 +681,39 @@ function speedModifier() {
 
 function updatePosPlayer() {
     const player = document.getElementById("player");
+    const player_graphics = document.getElementById("player_graphics");
+    if (player_graphics != undefined && (roundNumber(position_x, 10)+"px" != player.style.left || roundNumber(position_y, 10)+"px" != player.style.top)){
+        if (player_graphics.style.opacity == 0.99){
+            player_graphics.style.zoom=(parseFloat(player_graphics.style.zoom)+0.01).toString();
+            player_graphics.style.rotate=("2deg");
+            if (player_graphics.style.zoom>1.05){
+                player_graphics.style.opacity = 1;
+            }
+        }
+        else{
+            player_graphics.style.zoom=(parseFloat(player_graphics.style.zoom)-0.01).toString();
+            player_graphics.style.rotate=("-2deg");
+            if (player_graphics.style.zoom<0.95){
+                player_graphics.style.opacity = 0.99;
+            }
+        }
+        if (player_graphics.style.opacity == ""){
+            player_graphics.style.opacity = 0.99;
+        }
+        if (player_graphics.style.zoom == ""){
+            player_graphics.style.zoom=1;
+        }
+    }
+
     if (player!=undefined){
         player.style.left = position_x + "px";
         player.style.top = position_y + "px";
     }
+}
+function roundNumber(number, digits) {
+    var multiple = Math.pow(10, digits);
+    var rndedNum = Math.round(number * multiple) / multiple;
+    return rndedNum;
 }
 
 function checkForOutOfBounds(pos_x, pos_y) {
@@ -949,9 +978,9 @@ function updatePosMultiplayer() {
                 if (player_graphics.style.zoom == ""){
                     player_graphics.style.zoom=1;
                 }
-                console.log("opacity " + player_graphics.style.opacity);
-                console.log("zoom " + player_graphics.style.zoom);
             }
         }
     }
 }
+
+// multiplayer emojis
