@@ -34,6 +34,21 @@ const move_mult_speed = 4;
 var emoji_dict={}
 var wait_next_date;
 
+let imgName;
+let imgHandle;
+const pickerImageOpts = {
+        types: [
+            {
+            description: "Images",
+            accept: {
+                "image/*": [".png", ".gif", ".jpeg", ".jpg"],
+            },
+            },
+        ],
+        excludeAcceptAllOption: true,
+        multiple: false,
+    };
+
 //cookies XD
 
 function retrieveInfos() {
@@ -993,26 +1008,51 @@ function updatePosMultiplayer() {
 
 function addEmoji(nb) {
     if (wait_next_date == undefined || Date.now()-wait_next_date>=2000){
-        wait_next_date=Date.now();
-        var code = document.getElementById(nb).innerHTML;
-        showEmoji(code, Date.now());
-        //send to the server the emoji
-        fetch('http://localhost:5000/addEmojiList', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ code : code, date:Date.now(), pos_x:position_x, pos_y:position_y})
-        })
-        .then(response => response.json())
-        .then(data => {
-            
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        if (nb!=6){
+            wait_next_date=Date.now();
+            var code = document.getElementById(nb).innerHTML;
+            showEmoji(code, Date.now(), is_img=false);
+            //send to the server the emoji
+            fetch('http://localhost:5000/addEmojiList', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code:code, date:wait_next_date, pos_x:position_x, pos_y:position_y, is_img:false})
+            })
+            .then(response => response.json())
+            .then(data => {
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        else {
+            if (imgName!=undefined){
+                wait_next_date=Date.now();
+                var link = imgName;
+                showEmoji(link, Date.now(), is_img=true);
+                //send to the server the emoji
+                fetch('http://localhost:5000/addEmojiList', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code : link, date:wait_next_date, pos_x:position_x, pos_y:position_y, is_img:true})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        }
     }
 }
+
 
 function getEmojis() {
     //send to the server the emoji
@@ -1034,7 +1074,9 @@ function getEmojis() {
                     let date = emoji_infos[1];
                     let x = emoji_infos[2];
                     let y = emoji_infos[3];
-                    showEmoji(code, date, x, y);
+                    let is_img = emoji_infos[4];
+                    console.log(emoji_infos);
+                    showEmoji(code, date, is_img, x, y);
                 }
             }
         }
@@ -1044,7 +1086,8 @@ function getEmojis() {
     });
 }
 
-function showEmoji(code, date, x=position_x, y=position_y) {
+function showEmoji(code, date, is_img=false, x=position_x, y=position_y) {
+    //replace code par une img
     var not_in = true;
     for (let elt in emoji_dict){
         if (date == elt){
@@ -1052,15 +1095,27 @@ function showEmoji(code, date, x=position_x, y=position_y) {
         }
     }
     if (not_in){
-        document.getElementById("emoji_manager").insertAdjacentHTML('beforeend',"<div id='emoji_"+date+"'class='emoji_show'>"+code+"</div>");
-        document.getElementById("emoji_"+date).style.position = "absolute";
-        document.getElementById("emoji_"+date).style.left = x+"px";
-        document.getElementById("emoji_"+date).style.top = y+"px";
-        document.getElementById("emoji_"+date).style.animation = "emoji_fade 3s linear forwards";
-        
-        emoji_dict[date]=(["emoji_"+date]);
+        if (is_img == true || is_img == "True"){
+            document.getElementById("emoji_manager").insertAdjacentHTML('beforeend',"<img src='"+code+"' id='emoji_"+date+"'class='emoji_show'>");
+            document.getElementById("emoji_"+date).style.position = "absolute";
+            document.getElementById("emoji_"+date).style.left = x+"px";
+            document.getElementById("emoji_"+date).style.top = y+"px";
+            document.getElementById("emoji_"+date).style.animation = "emoji_fade 3s linear forwards";
+            
+            emoji_dict[date]=(["emoji_"+date]);
+        }
+        else {
+            document.getElementById("emoji_manager").insertAdjacentHTML('beforeend',"<div id='emoji_"+date+"'class='emoji_show'>"+code+"</div>");
+            document.getElementById("emoji_"+date).style.position = "absolute";
+            document.getElementById("emoji_"+date).style.left = x+"px";
+            document.getElementById("emoji_"+date).style.top = y+"px";
+            document.getElementById("emoji_"+date).style.animation = "emoji_fade 3s linear forwards";
+            
+            emoji_dict[date]=(["emoji_"+date]);
+        }
     }
 }
+
 
 function removeEmojis() {
     var emoji_to_keep = {};
@@ -1076,4 +1131,49 @@ function removeEmojis() {
         }
     }
     emoji_dict=emoji_to_keep;
+}
+
+//image part
+
+function selectImage() {
+    get_File()
+}
+async function get_File() {
+    // open file picker, destructure the one element returned array
+    [imgHandle] = await window.showOpenFilePicker(pickerImageOpts);
+    publishImg();
+}
+async function publishImg() {
+    const file = await imgHandle.getFile();
+    console.log("Uploading:", file);
+    if (!file) {
+        alert("Please select a file first!");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const IMGUR_CLIENT_ID = "3b2d954b1608ae6"; // please don't look uwu
+    try {
+        const res = await fetch("https://api.imgur.com/3/image", {
+            method: "POST",
+            headers: {
+                Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
+            },
+            body: formData
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById("image_to_swap").src = data.data.link;
+            imgName=data.data.link;
+            console.log("Uploaded:", data.data.link);
+        } else {
+            throw new Error(data.data.error);
+        }
+    } catch (err) {
+        console.error("Upload failed:", err.message);
+        alert("Imgur upload failed: " + err.message);
+    }
 }

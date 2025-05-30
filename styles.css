@@ -1,10 +1,10 @@
 @font-face {
     font-family: 'main_font';
-    src: url(fonts/fonts/Skqatterpillur.ttf);
+    src: url(fonts/Skqatterpillur.ttf);
 }
 @font-face {
     font-family: 'sub_font';
-    src: url(fonts/fonts/AOUWobbleText-Bold.ttf);
+    src: url(fonts/AOUWobbleText-Bold.ttf);
     font-style: bold;
 }   
 
@@ -807,6 +807,7 @@ input:not(:placeholder-shown) ~ label {
     margin-top: 8.5px;
     width:70px;
     height:70px;
+    outline: none;
     border-width: 0px;
     background:#ad717100;
 }
@@ -862,6 +863,23 @@ input:not(:placeholder-shown) ~ label {
 .side_emojis_button_swap :hover {
     cursor:pointer;
     color: #23a6d5;
+}
+
+.text_swap {
+    transition: 0.4s;
+    position: absolute;              /* Fixed to viewport */
+    right:2px;
+    bottom:-60px;
+    text-align: center;
+    font-family: "main_font";
+    font-size: 12px;
+    text-decoration: underline;
+    color:rgb(255, 105, 5);
+    opacity:0%;
+}
+
+.side_emojis_button_swap:hover ~.text_swap{
+    opacity:100%;
 }
 .side_emojis_button_swap .text{
     transition: 1s;

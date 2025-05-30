@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html style = "font-size:150%" id="friend">
+    <title> Web Life - Profile </title> 
+    <body>
+        <button onclick="selectImage()">truc truc truc</button>
+        <button onclick="test()">Upload to Imgur</button>
+        <p id="res">result</p>
+        <script>
+            let imgName;
+            var imgHandle;
+            const pickerImageOpts = {
+                types: [
+                    {
+                    description: "Images",
+                    accept: {
+                        "image/*": [".png", ".gif", ".jpeg", ".jpg"],
+                    },
+                    },
+                ],
+                excludeAcceptAllOption: true,
+                multiple: false,
+            };
+            function selectImage() {
+                getTFile()
+            }
+            async function getTFile() {
+                // open file picker, destructure the one element returned array
+                [imgHandle] = await window.showOpenFilePicker(pickerImageOpts);
+                const file = await imgHandle.getFile();
+                test(file);
+                // run code with our imgHandle
+            }
+            async function test(file) {
+                // Fetch image from URL
+                console.log("Uploading:", file);
+                if (!file) {
+                    alert("Please select a file first!");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("image", file);
+
+                const IMGUR_CLIENT_ID = "3b2d954b1608ae6"; // please don't look uwu
+                try {
+                    const res = await fetch("https://api.imgur.com/3/image", {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
+                        },
+                        body: formData
+                    });
+
+                    const data = await res.json();
+                    if (data.success) {
+                        document.getElementById("res").textContent = data.data.link;
+                        console.log("Uploaded:", data.data.link);
+                    } else {
+                        throw new Error(data.data.error);
+                    }
+                } catch (err) {
+                    console.error("Upload failed:", err.message);
+                    alert("Imgur upload failed: " + err.message);
+                }
+            }
+        </script>
+    </body>
+</html>

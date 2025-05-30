@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import json
 import time as Time
 import threading
+from PIL import Image
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # This will enable CORS for all routes
@@ -22,6 +23,7 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 SERVER_NUMBER = 8
 SERVER_LIST = []
 EMOJI_LIST = []
+SERVER_IMG = []
 
 
 
@@ -700,15 +702,16 @@ def checkPingDatabase(mail):
 def addEmojiList():
     data = request.get_json()
     code = data.get('code')
+    is_img = data.get('is_img')
     date = data.get('date')
     x = data.get('pos_x')
     y = data.get('pos_y')
     # Call your Python function here
-    result = addEmoji(code, date, x, y)
+    result = addEmoji(code, date, x, y, is_img)
     return jsonify({'result': result})
-
-def addEmoji(code, date, x, y):
-    EMOJI_LIST.append([code, date, x, y])
+def addEmoji(code, date, x, y, is_img):
+    EMOJI_LIST.append([code, date, x, y, is_img])
+    print(EMOJI_LIST)
     timer = threading.Timer(1.0, removeEmoji, args=(date,))
     timer.start()
     return "here"
@@ -719,17 +722,33 @@ def getEmojiList():
     # Call your Python function here
     result = getEmoji()
     return jsonify({'result': result})
-
 def getEmoji():
     list_str=""
     for elt in EMOJI_LIST:
-        list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+'|'
+        list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+'|'
     return list_str
 
 def removeEmoji(date):
     for emoji in EMOJI_LIST:
         if emoji[1] == date:
             EMOJI_LIST.remove(emoji)
+
+@app.route('/uploadImg', methods=['POST'])
+def uploadImg():
+    data = request.get_json()
+    file = data.get('file')
+    print(file)  # This should now print!
+
+    img = Image.open(file)
+    img.save('saved_img/img'+str(len(SERVER_IMG))+f'.{file.type}')
+    # Call your Python function here
+    result = Images(img)
+    return jsonify({'result': result})
+
+def Images(img):
+    name = "image_"+len(SERVER_IMG)
+    SERVER_IMG[name] = img
+    return name
 
 def getDatabaseCodes():
     codes=[]
