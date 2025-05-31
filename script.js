@@ -34,7 +34,7 @@ const move_mult_speed = 4;
 var emoji_dict={}
 var wait_next_date;
 
-let imgName;
+let imgName = "https://imgur.com/Tk5i9I7.png";
 let imgHandle;
 const pickerImageOpts = {
         types: [
@@ -1096,7 +1096,7 @@ function showEmoji(code, date, is_img=false, x=position_x, y=position_y) {
     }
     if (not_in){
         if (is_img == true || is_img == "True"){
-            document.getElementById("emoji_manager").insertAdjacentHTML('beforeend',"<img src='"+code+"' id='emoji_"+date+"'class='emoji_show'>");
+            document.getElementById("emoji_manager").insertAdjacentHTML('beforeend',"<img src='"+code+"' id='emoji_"+date+"'class='emoji_show' style='width:60px;height:60px;'>");
             document.getElementById("emoji_"+date).style.position = "absolute";
             document.getElementById("emoji_"+date).style.left = x+"px";
             document.getElementById("emoji_"+date).style.top = y+"px";
