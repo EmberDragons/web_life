@@ -1096,7 +1096,7 @@ function showEmoji(code, date, is_img=false, x=position_x, y=position_y) {
     }
     if (not_in){
         if (is_img == true || is_img == "True"){
-            document.getElementById("emoji_manager").insertAdjacentHTML('beforeend',"<img src='"+code+"' id='emoji_"+date+"'class='emoji_show' style='width:60px;height:60px;'>");
+            document.getElementById("emoji_manager").insertAdjacentHTML('beforeend',"<img src='"+code+"' id='emoji_"+date+"'class='emoji_show' style='width:60px;height:60px;border-radius: 10px;border: 1px solid rgba(48, 48, 48, 0.922);'>");
             document.getElementById("emoji_"+date).style.position = "absolute";
             document.getElementById("emoji_"+date).style.left = x+"px";
             document.getElementById("emoji_"+date).style.top = y+"px";
