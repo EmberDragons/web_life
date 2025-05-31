@@ -30,6 +30,20 @@
         opacity: 0%;
     }
 }
+@keyframes text_fade {
+    0% {
+        transform: translateY(0px);
+        opacity: 85%;
+    }
+    90%{
+        transform: translateY(0px);
+        opacity: 85%;
+    }
+    100% {
+        transform: translateY(-30px);
+        opacity: 0%;
+    }
+}
 
 @keyframes zoom_button {
     0% {
@@ -901,12 +915,13 @@ input:not(:placeholder-shown) ~ label {
 .chat_bar {
     text-align: left;
     padding-left: 50px;
+    padding-right: 50px;
     padding-top: 7px;
     font-family: main_font;
     font-size: 22px;
     color: #bdbcbc;
     z-index: 1001;
-    width: 500px;
+    width: 450px;
     height: 30px;
     position: fixed;              /* Fixed to viewport */
     
@@ -945,7 +960,18 @@ input:not(:placeholder-shown) ~ label {
     transform:rotate(12deg);
     zoom:106%;
 }
-
+.text_show {
+    color: #212121;
+    z-index: 1000;
+    opacity: 85%;
+    display: flex;
+    justify-content: center;  
+    align-items: center;      
+    text-align: center;       
+    height: 40px;           
+    min-width: 30px;
+    max-width: 80px;
+}
 
 header {
     position: sticky;

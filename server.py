@@ -710,27 +710,46 @@ def addEmojiList():
     result = addEmoji(code, date, x, y, is_img)
     return jsonify({'result': result})
 def addEmoji(code, date, x, y, is_img):
-    EMOJI_LIST.append([code, date, x, y, is_img])
-    print(EMOJI_LIST)
-    timer = threading.Timer(1.0, removeEmoji, args=(date,))
+    EMOJI_LIST.append([0,code, date, x, y, is_img])
+    timer = threading.Timer(1.0, remove, args=(date,))
     timer.start()
     return "here"
 
-@app.route('/getEmojiList', methods=['POST'])
-def getEmojiList():
+@app.route('/addTextList', methods=['POST'])
+def addTextList():
+    data = request.get_json()
+    code = data.get('code')
+    date = data.get('date')
+    player_mail = data.get('player_mail')
+    # Call your Python function here
+    result = addText(code, date, player_mail)
+    return jsonify({'result': result})
+def addText(code, date, player_mail):
+    EMOJI_LIST.append([1,code, date, player_mail])
+    print(EMOJI_LIST)
+    timer = threading.Timer(1.0, remove, args=(date,))
+    timer.start()
+    return "here"
+
+@app.route('/getObjectList', methods=['POST'])
+def getObjectList():
     data = request.get_json()
     # Call your Python function here
-    result = getEmoji()
+    result = getAll()
     return jsonify({'result': result})
-def getEmoji():
+def getAll():
     list_str=""
     for elt in EMOJI_LIST:
-        list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+'|'
+        if elt[0] == 1:
+            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+'|'
+        else:
+            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+","+str(elt[5])+'|'
+
     return list_str
 
-def removeEmoji(date):
+def remove(date):
     for emoji in EMOJI_LIST:
-        if emoji[1] == date:
+        if emoji[2] == date:
             EMOJI_LIST.remove(emoji)
 
 @app.route('/uploadImg', methods=['POST'])
