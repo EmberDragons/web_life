@@ -48,9 +48,12 @@ const pickerImageOpts = {
         excludeAcceptAllOption: true,
         multiple: false,
     };
+//chat message
+
+const input_chat = document.getElementsById("chat_bar");
+
 
 //cookies XD
-
 function retrieveInfos() {
     id_password=cookie_get('id_password');
     if (!id_password) {
@@ -120,6 +123,11 @@ window.addEventListener("keydown", (event) => {
 });
 window.addEventListener("keyup", (event) => {
     key_up_control(event);
+});
+input_chat.addEventListener("keyup", function(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
 });
 
 function key_up_control(e) {
@@ -1176,4 +1184,26 @@ async function publishImg() {
         console.error("Upload failed:", err.message);
         alert("Imgur upload failed: " + err.message);
     }
+}
+
+//Chat
+
+function sendMessage(){
+    var code = document.getElementById("chat_bar").value;
+    showEmoji(code, Date.now(), is_img=false);
+    //send to the server the emoji
+    fetch('http://localhost:5000/addEmojiList', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ code:code, date:Date.now(), pos_x:position_x, pos_y:position_y, is_img:false})
+    })
+    .then(response => response.json())
+    .then(data => {
+        
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 }

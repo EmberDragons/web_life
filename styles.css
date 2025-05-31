@@ -800,7 +800,6 @@ input:not(:placeholder-shown) ~ label {
     opacity: 0.85;
 }
 
-
 .side_emojis_button {
     position: relative;              /* Fixed to viewport */
     font-size: 60px;
@@ -827,6 +826,7 @@ input:not(:placeholder-shown) ~ label {
     margin-top: 20px;
     width:60px;
     height:60px;
+    outline: none;
     border-width: 0px;
     background:#ad717100;
 }
@@ -857,6 +857,7 @@ input:not(:placeholder-shown) ~ label {
     right:20px;
     bottom:0px;
     border-width: 0px;
+    outline: none;
     background:#33040400;
     transition: 1s;
 }
@@ -895,6 +896,56 @@ input:not(:placeholder-shown) ~ label {
     font-size: 35px;
     opacity:75%;
 }
+
+/*Chat css values*/
+.chat_bar {
+    text-align: left;
+    padding-left: 50px;
+    padding-top: 7px;
+    font-family: main_font;
+    font-size: 22px;
+    color: #bdbcbc;
+    z-index: 1001;
+    width: 500px;
+    height: 30px;
+    position: fixed;              /* Fixed to viewport */
+    
+    bottom: 70px;
+    left: 20px;                  /* Space from right edge */
+    background: linear-gradient(rgb(31, 37, 38), rgb(31, 37, 38));
+    border: 2px solid rgba(0, 0, 0, 0.922);
+    border-radius: 50px;
+    opacity: 0.75;
+}
+
+.chat_img {
+    z-index: 1002;
+    width:40px;
+}
+.chat_img_pos {
+    position: fixed;              /* Fixed to viewport */
+    bottom: 70px;
+    left: 25px;                  /* Space from right edge */
+    opacity: 0.65;
+}
+.send_img_pos {
+    opacity: 0.85;
+}
+.chat_send_button{
+    z-index: 1002;
+    position: fixed;              /* Fixed to viewport */
+    bottom: 67px;
+    left: 525px;                  /* Space from right edge */
+    background: transparent;
+    border-width: 0px;
+}
+
+.chat_send_button :hover{
+    cursor: pointer;
+    transform:rotate(12deg);
+    zoom:106%;
+}
+
 
 header {
     position: sticky;
