@@ -1256,6 +1256,7 @@ function sendMessage(){
             console.error('Error:', error);
         });
     }
+    document.getElementById("chat_bar").value="";
 }
 
 function removeText() {
