@@ -26,6 +26,11 @@ var controller = {"a" : false,
 
 var can_move=true;
 
+//online
+var nb_people_online = 0;
+var nb_people_registered = 0;
+
+
 //multiplayer
 var profile_shown = {};
 var dict_people_serv = {};
@@ -53,8 +58,9 @@ const pickerImageOpts = {
 
 var input_chat;
 const max_caracters = 250;
-var text_dict={}
+var text_dict={};
 var link_player_msg=[];
+
 
 
 //cookies XD
@@ -106,6 +112,8 @@ window.addEventListener("load", (event) => {
         mail = cookie_get("mail");
         GetProfile(mail);
     }
+    getpeopleOnline();
+    getpeopleRegistered();
 });
 
 
@@ -152,6 +160,54 @@ function key_up_control(e) {
 }
 function key_down_control(e) {
     controller[e.key] = true;
+}
+
+//function for index set up
+
+function setNbConnected() {
+    let html_part = document.getElementById("number_connected");
+    if (html_part!=undefined){
+        html_part.innerHTML = nb_people_online;
+    }
+}
+
+function setNbRegistered() {
+    let html_part = document.getElementById("number_registered");
+    if (html_part!=undefined){
+        html_part.innerHTML = nb_people_registered;
+    }
+}
+
+
+function getpeopleOnline(){
+    fetch('http://localhost:5000/getNBPeopleOnline', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        //console.log(data.result);
+        nb_people_online=data.result;
+        setNbConnected();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function getpeopleRegistered(){
+    fetch('http://localhost:5000/getNBPeople', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        nb_people_registered=data.result;
+        setNbRegistered();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 }
 
 function setColorCararcter() {
@@ -596,7 +652,6 @@ function log_in(mail, password){
 function setNewPassword(event){
     event.preventDefault();
     let id_password = window.location.search.substring(1).replace("id_password=","");
-    console.log(id_password);
     let new_password = document.getElementById('password_input').value;
     fetch('http://localhost:5000/changePassword', {
         method: 'POST',
@@ -615,7 +670,6 @@ function setNewPassword(event){
             console.log(data.result);
             var expiration_date=new Date(Date.now()+20*1000);
             document.cookie = `id_password=${id_password}; ${expiration_date}`;
-            console.log(document.cookie);
             retrieveInfos();
             setProfile();
             open('profile.html',"_self")
@@ -903,6 +957,8 @@ function check_ping_inside_database() {
     }
 }
 
+//multiplayer part
+
 function multiplayer_get() {
     if (server_id != undefined){
         //send to the database the id_password
@@ -1120,6 +1176,8 @@ function getObjects() {
                         let code = infos[1];
                         let date = infos[2];
                         let player_mail = infos[3];
+                        let player_name = infos[4];
+                        logText(code, date, player_mail, player_name);
                         showText(code, date, player_mail);
                     }
                     else{
@@ -1246,7 +1304,7 @@ function sendMessage(){
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ code:code, date:Date.now(), player_mail:mail})
+            body: JSON.stringify({ code:code, date:Date.now(), player_mail:mail, player_name:name_pseudo})
         })
         .then(response => response.json())
         .then(data => {
@@ -1263,9 +1321,7 @@ function removeText() {
     var text_to_keep = {};
     for (let elt in text_dict){
         if (Date.now()-elt>=3000+(document.getElementById(text_dict[elt]).innerHTML.length/(max_caracters*0.15))){
-            console.log(link_player_msg, text_dict[elt]);
             for (let _elt in link_player_msg){
-                console.log(link_player_msg[_elt][1], text_dict[elt]);
                 if (link_player_msg[_elt][1] == text_dict[elt]){
                     delete link_player_msg[_elt];
                 }
@@ -1283,7 +1339,7 @@ function removeText() {
 }
 
 function showText(code, date, player_mail, show_abs=false) {
-    //replace code par une img
+    //replace code par un text
     var not_in = true;
     for (let elt in text_dict){
         if (date == elt){
@@ -1314,5 +1370,25 @@ function showText(code, date, player_mail, show_abs=false) {
             text_dict[date]=(["text_"+date]);
             link_player_msg.push([player_mail, ("text_"+date).toString()]);
         }
+    }
+}
+
+function logText(text, date, p_mail, p_name){
+    var add = false;
+    if (document.getElementById(p_mail+date)==undefined){
+        add=true;
+    }
+    if (add==true){
+        const then = new Date(parseInt(date));
+        let str_date=then.toUTCString();
+
+        if (mail == p_mail){
+            document.getElementById("chat_log").insertAdjacentHTML('beforeend',"<p id='"+(p_mail+date)+"'>"+"<span class='log_name'>> You : </span>"+text+"<span class='log_date'>("+str_date+")</span>"+"</p>");
+        }
+        else {
+            document.getElementById("chat_log").insertAdjacentHTML('beforeend',"<p id='"+(p_mail+date)+"'>"+"<span class='log_name'>> "+p_name+" : </span>"+text+"<span class='log_date'>("+str_date+")</span>"+"</p>");
+        }
+        let chat = document.getElementById('chat_log');
+        chat.scrollTop = chat.scrollHeight;
     }
 }

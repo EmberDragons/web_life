@@ -22,7 +22,7 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 SERVER_NUMBER = 8
 SERVER_LIST = []
-EMOJI_LIST = []
+OBJECT_LIST = []
 SERVER_IMG = []
 
 
@@ -698,6 +698,67 @@ def checkPingDatabase(mail):
     conn.close()
     return "worked"
 
+@app.route('/checkIFOnline', methods=['POST'])
+def checkIFOnline():
+    data = request.get_json()
+    mail = data.get('mail')
+    # Call your Python function here
+    result = isOnline(mail)
+    return jsonify({'result': result})
+def isOnline(mail):
+    is_online = False
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT online FROM users WHERE mail = '{mail}'"
+    cur.execute(req)
+
+    for elt in cur:
+        if elt==True:
+            is_online=True
+    cur.close()
+    conn.close()
+    return is_online
+
+@app.route('/getNBPeopleOnline', methods=['GET'])
+def getNBPeopleOnline():
+    # Call your Python function here
+    result = peopleOnline()
+    return jsonify({'result': result})
+def peopleOnline():
+    nbr=0
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT mail FROM users WHERE online='True'"
+    cur.execute(req)
+
+    for _ in cur:
+        nbr+=1
+    cur.close()
+    conn.close()
+    return nbr
+
+@app.route('/getNBPeople', methods=['GET'])
+def getNBPeople():
+    # Call your Python function here
+    result = people()
+    return jsonify({'result': result})
+def people():
+    nbr=0
+    conn = sqlite3.connect('databases/profile_database.db')
+    cur = conn.cursor()
+    
+    req=f"SELECT mail FROM users"
+    cur.execute(req)
+
+    for _ in cur:
+        nbr+=1
+    cur.close()
+    conn.close()
+    return nbr
+
+
 @app.route('/addEmojiList', methods=['POST'])
 def addEmojiList():
     data = request.get_json()
@@ -710,7 +771,7 @@ def addEmojiList():
     result = addEmoji(code, date, x, y, is_img)
     return jsonify({'result': result})
 def addEmoji(code, date, x, y, is_img):
-    EMOJI_LIST.append([0,code, date, x, y, is_img])
+    OBJECT_LIST.append([0,code, date, x, y, is_img])
     timer = threading.Timer(1.0, remove, args=(date,))
     timer.start()
     return "here"
@@ -721,12 +782,12 @@ def addTextList():
     code = data.get('code')
     date = data.get('date')
     player_mail = data.get('player_mail')
+    player_name = data.get('player_name')
     # Call your Python function here
-    result = addText(code, date, player_mail)
+    result = addText(code, date, player_mail, player_name)
     return jsonify({'result': result})
-def addText(code, date, player_mail):
-    EMOJI_LIST.append([1,code, date, player_mail])
-    print(EMOJI_LIST)
+def addText(code, date, player_mail, player_name):
+    OBJECT_LIST.append([1,code, date, player_mail, player_name])
     timer = threading.Timer(1.0, remove, args=(date,))
     timer.start()
     return "here"
@@ -739,18 +800,18 @@ def getObjectList():
     return jsonify({'result': result})
 def getAll():
     list_str=""
-    for elt in EMOJI_LIST:
+    for elt in OBJECT_LIST:
         if elt[0] == 1:
-            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+'|'
+            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+'|'
         else:
             list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+","+str(elt[5])+'|'
 
     return list_str
 
 def remove(date):
-    for emoji in EMOJI_LIST:
+    for emoji in OBJECT_LIST:
         if emoji[2] == date:
-            EMOJI_LIST.remove(emoji)
+            OBJECT_LIST.remove(emoji)
 
 @app.route('/uploadImg', methods=['POST'])
 def uploadImg():
@@ -768,6 +829,8 @@ def Images(img):
     name = "image_"+len(SERVER_IMG)
     SERVER_IMG[name] = img
     return name
+
+
 
 def getDatabaseCodes():
     codes=[]
@@ -799,4 +862,3 @@ def generateKey():
 if __name__ == '__main__':
     setServersUp()
     app.run(debug=True)
-
