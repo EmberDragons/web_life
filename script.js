@@ -75,8 +75,8 @@ const update = () => {
     handleInput();
     move_all_multiplayer();
 
-    if (currentFrameShort == shortFrame*FRAMERATE) GET_SHORT();
-    if (currentFrameLong == longFrame*FRAMERATE) GET_LONG();
+    if (currentFrameShort == Math.round(shortFrame*FRAMERATE)) GET_SHORT();
+    if (currentFrameLong == Math.round(longFrame*FRAMERATE)) GET_LONG();
 }
 
 const draw = () => {
@@ -101,8 +101,8 @@ const GET_LONG = () => {
 //actual lauched gameLoop
 const gameLoop = new GameLoop(update, draw);
 
-const shortFrame = 1; //time in sec to wait for new short call
-const longFrame = 10; //time in sec to wait for new long call
+const shortFrame = 0.5; //time in sec to wait for new short call
+const longFrame = 7; //time in sec to wait for new long call
 
 var currentFrameShort=0;
 var currentFrameLong=0;

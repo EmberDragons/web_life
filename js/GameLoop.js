@@ -1,5 +1,5 @@
 
-export const FRAMERATE = 30;
+export const FRAMERATE = 50;
 
 export class GameLoop{
     constructor(update, render){

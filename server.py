@@ -772,7 +772,7 @@ def addEmojiList():
     return jsonify({'result': result})
 def addEmoji(code, date, x, y, is_img):
     OBJECT_LIST.append([0,code, date, x, y, is_img])
-    timer = threading.Timer(1.0, remove, args=(date,))
+    timer = threading.Timer(2.0, remove, args=(date,))
     timer.start()
     return "here"
 
@@ -788,7 +788,7 @@ def addTextList():
     return jsonify({'result': result})
 def addText(code, date, player_mail, player_name):
     OBJECT_LIST.append([1,code, date, player_mail, player_name])
-    timer = threading.Timer(1.0, remove, args=(date,))
+    timer = threading.Timer(2.0, remove, args=(date,))
     timer.start()
     return "here"
 
