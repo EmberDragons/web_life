@@ -1,3 +1,5 @@
+import { FRAMERATE, GameLoop } from './js/GameLoop.js';
+
 var password_state = false;
 var max_server = 8;
 
@@ -32,6 +34,8 @@ var nb_people_registered = 0;
 
 
 //multiplayer
+var canSetPosDB = false;
+
 var profile_shown = {};
 var dict_people_serv = {};
 const move_mult_speed = 4;
@@ -63,6 +67,47 @@ var link_player_msg=[];
 
 
 
+//game loop 
+
+const update = () => {
+    currentFrameShort++;
+    currentFrameLong++;
+    handleInput();
+    move_all_multiplayer();
+
+    if (currentFrameShort == shortFrame*FRAMERATE) GET_SHORT();
+    if (currentFrameLong == longFrame*FRAMERATE) GET_LONG();
+}
+
+const draw = () => {
+    updatePosPlayer();
+    updatePosMultiplayer();
+}
+
+const GET_SHORT = () => {
+    currentFrameShort=0;
+    getAllServerPeople();
+    getObjects();
+    multiplayer_get();
+    set_position_db();
+}
+
+const GET_LONG = () => {
+    currentFrameLong=0;
+    removeEmojis();
+    removeText();
+}
+
+//actual lauched gameLoop
+const gameLoop = new GameLoop(update, draw);
+
+const shortFrame = 1; //time in sec to wait for new short call
+const longFrame = 10; //time in sec to wait for new long call
+
+var currentFrameShort=0;
+var currentFrameLong=0;
+
+
 //cookies XD
 function retrieveInfos() {
     id_password=cookie_get('id_password');
@@ -88,9 +133,6 @@ window.addEventListener("load", (event) => {
     setListServer();
     if (cookie_get('id_password') != undefined){
         retrieveInfos();
-        if (document.getElementById("set_list_server")) {
-            getAllServerPeople();
-        }
     }
     else{
         setLogin();
@@ -99,14 +141,7 @@ window.addEventListener("load", (event) => {
         setConnectedTrue();
     }
     if(document.getElementsByName("play").length!=0){
-        setInterval(function(){handleInput()},20);
-        setInterval(function(){updatePosPlayer()},20);
-        setInterval(function(){move_all_multiplayer()},80);
-        setInterval(function(){multiplayer_get()},80);
-        setInterval(function(){updatePosMultiplayer()},25);
-        setInterval(function(){removeEmojis()},10000);
-        setInterval(function(){removeText()},10000);
-        setInterval(function(){getObjects()},500);
+        gameLoop.start();
     }
     if ((document.getElementById("friend")) || (document.getElementById("stranger"))) {
         mail = cookie_get("mail");
@@ -118,6 +153,7 @@ window.addEventListener("load", (event) => {
 
 
 window.addEventListener("beforeunload", (event) => {
+    gameLoop.stop();
     if (id_password != undefined) {
         const url = 'http://localhost:5000/updateOnlineFalse';
         const data = JSON.stringify({ id_password: id_password });
@@ -245,21 +281,21 @@ function setConnectedTrue(){
 }
 
 function getAllServerPeople(){
-    fetch('http://localhost:5000/serverPeople', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ max_server_id : max_server})
-    })
-    .then(response => response.json())
-    .then(data => {
-        list_server_nb = data.result.split(',');
-        setPeopleShow();
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-
-    setTimeout(getAllServerPeople, 1500);   
+    if (document.getElementById("set_list_server")) {
+        fetch('http://localhost:5000/serverPeople', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ max_server_id : max_server})
+        })
+        .then(response => response.json())
+        .then(data => {
+            list_server_nb = data.result.split(',');
+            setPeopleShow();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }   
 }
 
 function setPeopleShow(){
@@ -277,7 +313,7 @@ function joinServer(server_id){
         })
         .then(response => response.json())
         .then(data => {
-            open("play.html",'_self');
+            window.location.href = "play.html";
         })
         .catch(error => {
             console.error('Error:', error);
@@ -285,7 +321,7 @@ function joinServer(server_id){
         
     }
     else{
-        open("login.html", "_self");
+        window.location.href = "login.html";
     }
 }
 
@@ -307,14 +343,14 @@ function add_friend() {
         .then(response => response.json())
         .then(data => {
             console.log(data.result);
-            open("other_profile_friend.html", "_self");
+            window.location.href = "other_profile_friend.html";
         })
         .catch(error => {
             console.error('Error:', error);
         });
     }
     else {
-        open("login.html", "_self");
+        window.location.href = "login.html";
     }
 }
 function remove_friend() {
@@ -333,14 +369,14 @@ function remove_friend() {
         .then(response => response.json())
         .then(data => {
             console.log(data.result);
-            open("other_profile_stranger.html", "_self");
+            window.location.href = "other_profile_stranger.html";
         })
         .catch(error => {
             console.error('Error:', error);
         });
     }
     else {
-        open("login.html", "_self");
+        window.location.href = "login.html";
     }
 }
 
@@ -350,9 +386,9 @@ function see_profile(pers_mail) {
     //if friend...
     is_friend(pers_mail).then(isFriend => {
         if (isFriend == "True") {
-            open("other_profile_friend.html", "_self");
+            window.location.href = "other_profile_friend.html";
         } else {
-            open("other_profile_stranger.html", "_self");
+            window.location.href = "other_profile_stranger.html";
         }
     });
 }
@@ -443,7 +479,7 @@ function GetProfile(mail) {
 function logOut() {
     document.cookie="id_password = ''; expires=Thu, 03 Aug 2008 12:00:00 UTC; path=/";
     
-    open('login.html',"_self");
+        window.location.href = "login.html";
 }
 
 
@@ -549,10 +585,10 @@ function setProfileModifie() {
 
 function openProfile() {
     if (!id_password) {
-        window.open("login.html","_self");
+        window.location.href = "login.html";
     }
     else{
-        window.open("profile.html","_self");
+        window.location.href = "profile.html";
     }
 }
 
@@ -627,7 +663,7 @@ function log_in(mail, password){
     .then(data => {
         if (data.result == "Error-not_in_data_base"){
             alert('Error : This mail is not linked to an account');
-            open("register.html");
+            window.location.href = "register.html";
             console.error(data.result);
         }
         else if (data.result == "Error-password_incorrect"){
@@ -641,7 +677,7 @@ function log_in(mail, password){
             console.log(document.cookie);
             retrieveInfos();
             setProfile();
-            open('profile.html',"_self")
+            window.location.href = "profile.html";
         }
     })
     .catch(error => {
@@ -672,7 +708,7 @@ function setNewPassword(event){
             document.cookie = `id_password=${id_password}; ${expiration_date}`;
             retrieveInfos();
             setProfile();
-            open('profile.html',"_self")
+            window.location.href = "profile.html";
         }
     })
     .catch(error => {
@@ -718,7 +754,7 @@ function submitRegister(event) {
 
 function handleInput(){
     if (can_move==true){
-        list = [0,0,0,0];
+        var list = [0,0,0,0];
         for(var key in controller) {
             var value = controller[key];
             if (value==true) {
@@ -740,8 +776,8 @@ function handleInput(){
 
 function movePlayer(x, y){
     if (x!=position_x && y!=position_y){
-        mid_x=(x-position_x)*0.71;
-        mid_y=(y-position_y)*0.71;
+        var mid_x=(x-position_x)*0.71;
+        var mid_y=(y-position_y)*0.71;
         if (checkForOutOfBounds(position_x+mid_x,position_y+mid_y) == false) {
             position_x = position_x+mid_x;
             position_y = position_y+mid_y;
@@ -765,31 +801,6 @@ function movePlayer(x, y){
         }
     }
 }
-/*
-function speedModifier() {
-    if ((controller["a"] == true || controller["d"] == true) && speed_x<max_speed){
-        speed_x*=acc;
-    }
-    if ((controller["s"] == true || controller["w"] == true) && speed_y<max_speed){
-        speed_y*=acc;
-    }
-    if (controller["a"] == false && controller["d"] == false && speed_x>norm_speed){
-        speed_x*=friction;
-        if (last_keys_axis["horizontal"] == "a"){
-            console.log(speed_x)
-            movePlayer(position_x+speed_x, position_y);
-        }if (last_keys_axis["horizontal"] == "d"){
-            movePlayer(position_x-speed_x, position_y);
-    }
-    if (controller["a"] == false && controller["d"] == false && speed_y>norm_speed){
-        speed_y*=friction;
-        }if (last_keys_axis["vertical"] == "s"){
-            movePlayer(position_x, position_y-speed_y);
-        }if (last_keys_axis["vertical"] == "w"){
-            movePlayer(position_x, position_y+speed_y);
-        }
-    }
-}*/
 
 function updatePosPlayer() {
     const player = document.getElementById("player");
@@ -867,14 +878,13 @@ function communicate_get() {
                 server_id = infos[3];
                 color = infos[4].trim();
                 banner_color = infos[5].trim();
-                online = infos[6];
                 list_friends = infos[7];
                 setProfile();
                 if (document.getElementById("player")) {
                     setColorCararcter();
                 }
                 add_to_db()
-                setInterval(function(){set_position_db()},300);
+                canSetPosDB=true;
             }
         })
         .catch(error => {
@@ -887,20 +897,22 @@ function communicate_get() {
 //MULTIPLAYER communication
 
 function set_position_db() {
-    if (mail){
-        fetch('http://localhost:5000/updatePos', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ mail : mail, server_id : server_id, pos_x:position_x, pos_y : position_y})
-        })
-        .then(response => response.json())
-        .then(data =>{
-            if (data.result == "not in data_base"){
-                add_to_db()
-            }
-        });
+    if (canSetPosDB){
+        if (mail){
+            fetch('http://localhost:5000/updatePos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ mail : mail, server_id : server_id, pos_x:position_x, pos_y : position_y})
+            })
+            .then(response => response.json())
+            .then(data =>{
+                if (data.result == "not in data_base"){
+                    add_to_db()
+                }
+            });
+        }
     }
 }
 
@@ -1034,9 +1046,6 @@ function move_all_multiplayer() {
             //we remove it
             remove_multiplayer(n_mail);
         }
-        else{
-
-        }
     }
 }
 
@@ -1113,7 +1122,7 @@ function addEmoji(nb) {
         if (nb!=6){
             wait_next_date=Date.now();
             var code = document.getElementById(nb).innerHTML;
-            showEmoji(code, Date.now(), is_img=false);
+            showEmoji(code, Date.now(), false);
             //send to the server the emoji
             fetch('http://localhost:5000/addEmojiList', {
                 method: 'POST',
@@ -1134,7 +1143,7 @@ function addEmoji(nb) {
             if (imgName!=undefined){
                 wait_next_date=Date.now();
                 var link = imgName;
-                showEmoji(link, Date.now(), is_img=true);
+                showEmoji(link, Date.now(), true);
                 //send to the server the emoji
                 fetch('http://localhost:5000/addEmojiList', {
                     method: 'POST',
@@ -1177,6 +1186,7 @@ function getObjects() {
                         let date = infos[2];
                         let player_mail = infos[3];
                         let player_name = infos[4];
+                        console.log(code);
                         logText(code, date, player_mail, player_name);
                         showText(code, date, player_mail);
                     }
@@ -1297,7 +1307,7 @@ function sendMessage(){
         alert("Too much caracters, please shorten your sentence");
     }
     else{
-        showText(code, Date.now(), mail, show_abs=true);
+        showText(code, Date.now(), mail, true);
         //send to the server the emoji
         fetch('http://localhost:5000/addTextList', {
             method: 'POST',
@@ -1383,12 +1393,29 @@ function logText(text, date, p_mail, p_name){
         let str_date=then.toUTCString();
 
         if (mail == p_mail){
-            document.getElementById("chat_log").insertAdjacentHTML('beforeend',"<p id='"+(p_mail+date)+"'>"+"<span class='log_name'>> You : </span>"+text+"<span class='log_date'>("+str_date+")</span>"+"</p>");
+            document.getElementById("chat_log").insertAdjacentHTML('beforeend',"<p id='"+(p_mail+date)+"'>"+"<span class='log_name'>> You : </span>"+text+"<span class='log_date'> ("+str_date+")</span>"+"</p>");
         }
         else {
-            document.getElementById("chat_log").insertAdjacentHTML('beforeend',"<p id='"+(p_mail+date)+"'>"+"<span class='log_name'>> "+p_name+" : </span>"+text+"<span class='log_date'>("+str_date+")</span>"+"</p>");
+            document.getElementById("chat_log").insertAdjacentHTML('beforeend',"<p id='"+(p_mail+date)+"'>"+"<span class='log_name'>> "+p_name+" : </span>"+text+"<span class='log_date'> ("+str_date+")</span>"+"</p>");
         }
         let chat = document.getElementById('chat_log');
         chat.scrollTop = chat.scrollHeight;
     }
 }
+
+window.joinServer = joinServer;
+window.add_friend = add_friend;
+window.remove_friend = remove_friend;
+window.see_profile = see_profile;
+window.logOut = logOut;
+window.setProfileShow = setProfileShow;
+window.setProfileModifie = setProfileModifie;
+window.openProfile = openProfile;
+window.sendMail = sendMail;
+window.passwordShow = passwordShow;
+window.submitLogin = submitLogin;
+window.setNewPassword = setNewPassword;
+window.submitRegister = submitRegister;
+window.addEmoji = addEmoji;
+window.selectImage = selectImage;
+window.sendMessage = sendMessage;
