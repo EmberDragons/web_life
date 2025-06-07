@@ -16,8 +16,8 @@ app = Flask(__name__)
 
 
 app.config['SECRET_KEY'] = 'secret'
-socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app, origins=["https://web-life-client.vercel.app"], supports_credentials=True)
+socketio = SocketIO(app, cors_allowed_origins="https://web-life-client.vercel.app")
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
@@ -495,7 +495,7 @@ def resetRequest(mail, id_pass):
 
     <p>You requested a password reset, clicking this link will allow you to set a new password for your account:</p>
 
-    Go to the page: <a href="http://, port = 5000/password_reset.html?id_password={id_pass}">click here to reset password http://localhost:8000/password_reset.html?id_password={id_pass}</a>
+    Go to the page: <a href="https://web-life-client.vercel.app/templates/password_reset.html?id_password={id_pass}">click here to reset password http://localhost:8000/password_reset.html?id_password={id_pass}</a>
     Best regards,
     Web Life Team. (Jk i am single, just me....)
     </pre>"""
