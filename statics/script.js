@@ -1,4 +1,5 @@
 import { FRAMERATE, GameLoop } from './js/GameLoop.js';
+import { WebSocket } from './js/WebSocket.js';
 
 var password_state = false;
 var max_server = 8;
@@ -29,6 +30,8 @@ var controller = {"a" : false,
 var can_move=true;
 
 //online
+var online = false;
+
 var nb_people_online = 0;
 var nb_people_registered = 0;
 
@@ -47,17 +50,17 @@ var wait_next_date;
 let imgName = "https://imgur.com/Tk5i9I7.png";
 let imgHandle;
 const pickerImageOpts = {
-        types: [
-            {
-            description: "Images",
-            accept: {
-                "image/*": [".png", ".gif", ".jpeg", ".jpg"],
-            },
-            },
-        ],
-        excludeAcceptAllOption: true,
-        multiple: false,
-    };
+    types: [
+        {
+        description: "Images",
+        accept: {
+            "image/*": [".png", ".gif", ".jpeg", ".jpg"],
+        },
+        },
+    ],
+    excludeAcceptAllOption: true,
+    multiple: false,
+};
 //chat message
 
 var input_chat;
@@ -86,23 +89,36 @@ const draw = () => {
 
 const GET_SHORT = () => {
     currentFrameShort=0;
+
+    webSocket.sendPos();
+
+
     getAllServerPeople();
     getObjects();
     multiplayer_get();
-    set_position_db();
+    set_position_server();
 }
 
 const GET_LONG = () => {
     currentFrameLong=0;
-    removeEmojis();
+
+    //no fetch
     removeText();
+    removeEmojis();
 }
+
+//socket io code set up
+
+const webSocket = WebSocket();
+
+
+
 
 //actual lauched gameLoop
 const gameLoop = new GameLoop(update, draw);
 
-const shortFrame = 0.5; //time in sec to wait for new short call
-const longFrame = 7; //time in sec to wait for new long call
+const shortFrame = 2; //time in sec to wait for new short call
+const longFrame = 10; //time in sec to wait for new long call
 
 var currentFrameShort=0;
 var currentFrameLong=0;
@@ -281,6 +297,7 @@ function setConnectedTrue(){
 }
 
 function getAllServerPeople(){
+    
     if (document.getElementById("set_list_server")) {
         fetch('http://localhost:5000/serverPeople', {
             method: 'POST',
@@ -313,7 +330,7 @@ function joinServer(server_id){
         })
         .then(response => response.json())
         .then(data => {
-            window.location.href = "play.html";
+            open("play.html",'_self');
         })
         .catch(error => {
             console.error('Error:', error);
@@ -321,7 +338,7 @@ function joinServer(server_id){
         
     }
     else{
-        window.location.href = "login.html";
+        open("login.html", "_self");
     }
 }
 
@@ -343,14 +360,14 @@ function add_friend() {
         .then(response => response.json())
         .then(data => {
             console.log(data.result);
-            window.location.href = "other_profile_friend.html";
+            open("other_profile_friend.html", "_self");
         })
         .catch(error => {
             console.error('Error:', error);
         });
     }
     else {
-        window.location.href = "login.html";
+        open("login.html", "_self");
     }
 }
 function remove_friend() {
@@ -369,14 +386,14 @@ function remove_friend() {
         .then(response => response.json())
         .then(data => {
             console.log(data.result);
-            window.location.href = "other_profile_stranger.html";
+            open("other_profile_stranger.html", "_self");
         })
         .catch(error => {
             console.error('Error:', error);
         });
     }
     else {
-        window.location.href = "login.html";
+        open("login.html", "_self");
     }
 }
 
@@ -386,9 +403,9 @@ function see_profile(pers_mail) {
     //if friend...
     is_friend(pers_mail).then(isFriend => {
         if (isFriend == "True") {
-            window.location.href = "other_profile_friend.html";
+            open("other_profile_friend.html", "_self");
         } else {
-            window.location.href = "other_profile_stranger.html";
+            open("other_profile_stranger.html", "_self");
         }
     });
 }
@@ -479,7 +496,7 @@ function GetProfile(mail) {
 function logOut() {
     document.cookie="id_password = ''; expires=Thu, 03 Aug 2008 12:00:00 UTC; path=/";
     
-        window.location.href = "login.html";
+    open('login.html',"_self");
 }
 
 
@@ -585,10 +602,10 @@ function setProfileModifie() {
 
 function openProfile() {
     if (!id_password) {
-        window.location.href = "login.html";
+        open("login.html","_self");
     }
     else{
-        window.location.href = "profile.html";
+        open("profile.html","_self");
     }
 }
 
@@ -663,7 +680,7 @@ function log_in(mail, password){
     .then(data => {
         if (data.result == "Error-not_in_data_base"){
             alert('Error : This mail is not linked to an account');
-            window.location.href = "register.html";
+            open("register.html");
             console.error(data.result);
         }
         else if (data.result == "Error-password_incorrect"){
@@ -677,7 +694,7 @@ function log_in(mail, password){
             console.log(document.cookie);
             retrieveInfos();
             setProfile();
-            window.location.href = "profile.html";
+            open('profile.html',"_self")
         }
     })
     .catch(error => {
@@ -708,7 +725,7 @@ function setNewPassword(event){
             document.cookie = `id_password=${id_password}; ${expiration_date}`;
             retrieveInfos();
             setProfile();
-            window.location.href = "profile.html";
+            open('profile.html',"_self")
         }
     })
     .catch(error => {
@@ -801,6 +818,31 @@ function movePlayer(x, y){
         }
     }
 }
+/*
+function speedModifier() {
+    if ((controller["a"] == true || controller["d"] == true) && speed_x<max_speed){
+        speed_x*=acc;
+    }
+    if ((controller["s"] == true || controller["w"] == true) && speed_y<max_speed){
+        speed_y*=acc;
+    }
+    if (controller["a"] == false && controller["d"] == false && speed_x>norm_speed){
+        speed_x*=friction;
+        if (last_keys_axis["horizontal"] == "a"){
+            console.log(speed_x)
+            movePlayer(position_x+speed_x, position_y);
+        }if (last_keys_axis["horizontal"] == "d"){
+            movePlayer(position_x-speed_x, position_y);
+    }
+    if (controller["a"] == false && controller["d"] == false && speed_y>norm_speed){
+        speed_y*=friction;
+        }if (last_keys_axis["vertical"] == "s"){
+            movePlayer(position_x, position_y-speed_y);
+        }if (last_keys_axis["vertical"] == "w"){
+            movePlayer(position_x, position_y+speed_y);
+        }
+    }
+}*/
 
 function updatePosPlayer() {
     const player = document.getElementById("player");
@@ -878,6 +920,7 @@ function communicate_get() {
                 server_id = infos[3];
                 color = infos[4].trim();
                 banner_color = infos[5].trim();
+                online = infos[6];
                 list_friends = infos[7];
                 setProfile();
                 if (document.getElementById("player")) {
@@ -896,7 +939,7 @@ function communicate_get() {
 
 //MULTIPLAYER communication
 
-function set_position_db() {
+function set_position_server() {
     if (canSetPosDB){
         if (mail){
             fetch('http://localhost:5000/updatePos', {
@@ -998,6 +1041,7 @@ function multiplayer_get() {
                     let position_y_pers = parseFloat(mult_infos[4]);
 
                     if (mail_pers != mail.trim() && mail_pers!=""){
+                        console.log(mail_pers,dict_people_serv);
                         if (!(mail_pers in dict_people_serv)){
                             add_multiplayer(mail_pers, name_pers, color_pers);
                         }
@@ -1027,6 +1071,7 @@ function add_multiplayer(mail_pers, name, color) {
     //the rest
     let infos_pers = {"name":name, "color":color, "target_pos_x" : 500, "target_pos_y" : 500, "pos_x":500, "pos_y":500, "time" : 0};
     dict_people_serv[mail_pers] = infos_pers;
+    console.log(dict_people_serv);
 }
 
 function remove_multiplayer(n_mail) {
@@ -1041,8 +1086,8 @@ function remove_multiplayer(n_mail) {
 
 function move_all_multiplayer() {
     for (let n_mail in dict_people_serv){
-        dict_people_serv[n_mail]["time"]+=0.005;
-        if (dict_people_serv[n_mail]["time"]>=0.2){
+        dict_people_serv[n_mail]["time"]+=1;
+        if (dict_people_serv[n_mail]["time"]>=FRAMERATE*2.5){ // .. secs ecoule
             //we remove it
             remove_multiplayer(n_mail);
         }
@@ -1186,7 +1231,6 @@ function getObjects() {
                         let date = infos[2];
                         let player_mail = infos[3];
                         let player_name = infos[4];
-                        console.log(code);
                         logText(code, date, player_mail, player_name);
                         showText(code, date, player_mail);
                     }

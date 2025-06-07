@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS,cross_origin
+from flask import Flask, request, jsonify, render_template
+from flask_socketio import SocketIO, emit
+from flask_cors import CORS
 import sqlite3, random
 import smtplib
 import os 
@@ -12,8 +13,11 @@ import threading
 from PIL import Image
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)  # This will enable CORS for all routes
 
+
+app.config['SECRET_KEY'] = 'secret'
+socketio = SocketIO(app, cors_allowed_origins="*")
+CORS(app, origins=["https://web-life-client.vercel.app"], supports_credentials=True)
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
@@ -25,7 +29,98 @@ SERVER_LIST = []
 OBJECT_LIST = []
 SERVER_IMG = []
 
+"""web socket events"""
 
+@socketio.on('serverPeople')
+def serverPeople():
+    # Call your Python function here
+    result = getNbServerPeople()
+    return {'result': result}
+
+def getNbServerPeople():
+    nbr_people = ""
+
+    for serv in SERVER_LIST:
+        per_server = 0
+        for mail in serv:
+            per_server+=1
+        nbr_people+=str(per_server)+','
+    
+    if nbr_people != "":
+        return f"{nbr_people}"
+    else:
+        return f"Error-server_id incorrect"
+
+
+@socketio.on('getObjectList')
+def getObjectList():
+    # Call your Python function here
+    result = getAll()
+    return {'result': result}
+def getAll():
+    list_str=""
+    for elt in OBJECT_LIST:
+        if elt[0] == 1:
+            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+'|'
+        else:
+            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+","+str(elt[5])+'|'
+
+    return list_str
+
+
+@socketio.on('updatePos')
+def updatePos(dict):
+    mail = dict['mail']
+    server_id = int(dict['server_id'])
+    pos_x = dict['pos_x']
+    pos_y = dict['pos_y']
+    color = dict['color']
+    name = dict['name']
+
+    Position(mail, server_id, pos_x, pos_y, color, name)
+def Position(mail, server_id, pos_x, pos_y, color, name):
+    our_serv = SERVER_LIST[server_id-1]
+    if mail in our_serv:
+        pers = our_serv[mail]
+        pers["pos_x"] = pos_x
+        pers["pos_y"] = pos_y
+        emit("position", {"mail":mail,"server_id":server_id, "pos_x":pos_x, "pos_y":pos_y, "color":color, "name":name}, broadcast=True)
+
+
+@socketio.on('addEmojiList')
+def addEmojiList(dict):
+    code = dict['code']
+    is_img = dict['is_img']
+    date = dict['date']
+    x = dict['pos_x']
+    y = dict['pos_y']
+    # Call your Python function here
+    addEmoji(code, date, x, y, is_img)
+def addEmoji(code, date, x, y, is_img):
+    OBJECT_LIST.append([0,code, date, x, y, is_img])
+    timer = threading.Timer(2.0, remove, args=(date,))
+    timer.start()
+
+@socketio.on('addTextList')
+def addTextList(dict):
+    code = dict['code']
+    date = dict['date']
+    player_mail = dict['player_mail']
+    player_name = dict['player_name']
+    # Call your Python function here
+    addText(code, date, player_mail, player_name)
+def addText(code, date, player_mail, player_name):
+    OBJECT_LIST.append([1,code, date, player_mail, player_name])
+    timer = threading.Timer(2.0, remove, args=(date,))
+    timer.start()
+
+
+def remove(date):
+    for emoji in OBJECT_LIST:
+        if emoji[2] == date:
+            OBJECT_LIST.remove(emoji)
+
+"""fetch events"""
 
 @app.route('/changeServer', methods=['POST'])
 def changeServer():
@@ -400,7 +495,7 @@ def resetRequest(mail, id_pass):
 
     <p>You requested a password reset, clicking this link will allow you to set a new password for your account:</p>
 
-    Go to the page: <a href="http://localhost:8000/password_reset.html?id_password={id_pass}">click here to reset password http://localhost:8000/password_reset.html?id_password={id_pass}</a>
+    Go to the page: <a href="http://, port = 5000/password_reset.html?id_password={id_pass}">click here to reset password http://localhost:8000/password_reset.html?id_password={id_pass}</a>
     Best regards,
     Web Life Team. (Jk i am single, just me....)
     </pre>"""
@@ -535,75 +630,7 @@ def Communicate(id):
         return f"Error-idpassword incorrect"
 
 
-@app.route('/serverPeople', methods=['POST'])
-def serverPeople():
-    data = request.get_json()
-    # Call your Python function here
-    result = getNbServerPeople()
-    return jsonify({'result': result})
-
-def getNbServerPeople():
-    nbr_people = ""
-
-    for serv in SERVER_LIST:
-        per_server = 0
-        for mail in serv:
-            per_server+=1
-        nbr_people+=str(per_server)+','
-    
-    if nbr_people != "":
-        return f"{nbr_people}"
-    else:
-        return f"Error-server_id incorrect"
-
-
-@app.route('/updatePos', methods=['POST'])
-def updatePos():
-    # Parse the raw data from the request
-    raw_data = request.data.decode('utf-8')
-    data = json.loads(raw_data)  # Convert the raw string to JSON
-
-    mail = data.get('mail')
-    server_id = int(data.get('server_id'))
-    pos_x = data.get('pos_x')
-    pos_y = data.get('pos_y')
-
-    if not mail:
-        return jsonify({'error': 'Missing mail'}), 400
-    
-    result = Position(mail, server_id, pos_x, pos_y)
-    return jsonify({'result': result})
-
-def Position(mail, server_id, pos_x, pos_y):
-    our_serv = SERVER_LIST[server_id-1]
-    if mail in our_serv:
-        pers = our_serv[mail]
-        pers["pos_x"] = pos_x
-        pers["pos_y"] = pos_y
-        return "updated"
-    else:
-        return "not in data_base"
-
-
 #multiplayer here
-@app.route('/multiplayer', methods=['POST'])
-def multiplayer():
-    data = request.get_json()
-    server_id = int(data.get('server_id'))
-    # Call your Python function here
-    result = SendMultInfos(server_id)
-    return jsonify({'result': result})
-
-def SendMultInfos(server_id):
-    #access local list
-    list_people = ""
-    our_serv = SERVER_LIST[server_id-1]
-    for mail in our_serv:
-        pers = our_serv[mail]
-        str_pers = mail+","+str(pers["name"])+","+str(pers["color"])+","+str(pers["pos_x"])+","+str(pers["pos_y"])
-        list_people+=str_pers+"|"
-
-    return list_people
 
 
 def setServersUp():
@@ -671,11 +698,9 @@ def ping():
     # Call your Python function here
     result = checkPing(server_id)
     return jsonify({'result': result})
-
 def checkPing(server_id):
     our_serv = SERVER_LIST[server_id-1]
     return "worked"
-
 @app.route('/pingInsideDatabase', methods=['POST'])
 def pingInsideDatabase():
     data = request.get_json()
@@ -683,7 +708,6 @@ def pingInsideDatabase():
     # Call your Python function here
     result = checkPingDatabase(mail)
     return jsonify({'result': result})
-
 def checkPingDatabase(mail):
     conn = sqlite3.connect('databases/profile_database.db')
     cur = conn.cursor()
@@ -759,60 +783,6 @@ def people():
     return nbr
 
 
-@app.route('/addEmojiList', methods=['POST'])
-def addEmojiList():
-    data = request.get_json()
-    code = data.get('code')
-    is_img = data.get('is_img')
-    date = data.get('date')
-    x = data.get('pos_x')
-    y = data.get('pos_y')
-    # Call your Python function here
-    result = addEmoji(code, date, x, y, is_img)
-    return jsonify({'result': result})
-def addEmoji(code, date, x, y, is_img):
-    OBJECT_LIST.append([0,code, date, x, y, is_img])
-    timer = threading.Timer(2.0, remove, args=(date,))
-    timer.start()
-    return "here"
-
-@app.route('/addTextList', methods=['POST'])
-def addTextList():
-    data = request.get_json()
-    code = data.get('code')
-    date = data.get('date')
-    player_mail = data.get('player_mail')
-    player_name = data.get('player_name')
-    # Call your Python function here
-    result = addText(code, date, player_mail, player_name)
-    return jsonify({'result': result})
-def addText(code, date, player_mail, player_name):
-    OBJECT_LIST.append([1,code, date, player_mail, player_name])
-    timer = threading.Timer(2.0, remove, args=(date,))
-    timer.start()
-    return "here"
-
-@app.route('/getObjectList', methods=['POST'])
-def getObjectList():
-    data = request.get_json()
-    # Call your Python function here
-    result = getAll()
-    return jsonify({'result': result})
-def getAll():
-    list_str=""
-    for elt in OBJECT_LIST:
-        if elt[0] == 1:
-            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+'|'
-        else:
-            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+","+str(elt[5])+'|'
-
-    return list_str
-
-def remove(date):
-    for emoji in OBJECT_LIST:
-        if emoji[2] == date:
-            OBJECT_LIST.remove(emoji)
-
 @app.route('/uploadImg', methods=['POST'])
 def uploadImg():
     data = request.get_json()
@@ -861,4 +831,4 @@ def generateKey():
 
 if __name__ == '__main__':
     setServersUp()
-    app.run(debug=True)
+    socketio.run(app, debug=True, port=5000)
