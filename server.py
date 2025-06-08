@@ -53,17 +53,21 @@ def getNbServerPeople():
 
 
 @socketio.on('getObjectList')
-def getObjectList():
+def getObjectList(dict):
+    server = dict['server_id']
     # Call your Python function here
-    result = getAll()
+    result = getAll(server)
     return {'result': result}
-def getAll():
+def getAll(server):
     list_str=""
     for elt in OBJECT_LIST:
         if elt[0] == 1:
-            list_str+=str(elt[0])+"§"+str(elt[1])+"§"+str(elt[2])+"§"+str(elt[3])+"§"+str(elt[4])+'𩸽'
+            if elt[5] == server:
+                print(elt[5])
+                list_str+=str(elt[0])+"§"+str(elt[1])+"§"+str(elt[2])+"§"+str(elt[3])+"§"+str(elt[4])+'𩸽'
         else:
-            list_str+=str(elt[0])+"§"+str(elt[1])+"§"+str(elt[2])+"§"+str(elt[3])+"§"+str(elt[4])+"§"+str(elt[5])+'𩸽'
+            if elt[6] == server:
+                list_str+=str(elt[0])+"§"+str(elt[1])+"§"+str(elt[2])+"§"+str(elt[3])+"§"+str(elt[4])+"§"+str(elt[5])+'𩸽'
 
     return list_str
 
@@ -94,10 +98,11 @@ def addEmojiList(dict):
     date = dict['date']
     x = dict['pos_x']
     y = dict['pos_y']
+    server_id = dict['server_id']
     # Call your Python function here
-    addEmoji(code, date, x, y, is_img)
-def addEmoji(code, date, x, y, is_img):
-    OBJECT_LIST.append([0,code, date, x, y, is_img])
+    addEmoji(code, date, x, y, is_img, server_id)
+def addEmoji(code, date, x, y, is_img, server_id):
+    OBJECT_LIST.append([0,code, date, x, y, is_img, server_id])
     timer = threading.Timer(2.0, remove, args=(date,))
     timer.start()
 
@@ -107,10 +112,11 @@ def addTextList(dict):
     date = dict['date']
     player_mail = dict['player_mail']
     player_name = dict['player_name']
+    server_id = dict['server_id']
     # Call your Python function here
-    addText(code, date, player_mail, player_name)
-def addText(code, date, player_mail, player_name):
-    OBJECT_LIST.append([1,code, date, player_mail, player_name])
+    addText(code, date, player_mail, player_name, server_id)
+def addText(code, date, player_mail, player_name, server_id):
+    OBJECT_LIST.append([1,code, date, player_mail, player_name, server_id])
     timer = threading.Timer(2.0, remove, args=(date,))
     timer.start()
 
@@ -495,7 +501,7 @@ def resetRequest(mail, id_pass):
 
     <p>You requested a password reset, clicking this link will allow you to set a new password for your account:</p>
 
-    Go to the page: <a href="https://web-life-client.vercel.app/templates/password_reset.html?id_password={id_pass}">click here to reset password http://localhost:8000/password_reset.html?id_password={id_pass}</a>
+    Go to the page: <a href="https://web-life-client.vercel.app/templates/password_reset.html?id_password={id_pass}">click here to reset password https://web-life-client.vercel.app/templates/password_reset.html?id_password={id_pass}</a>
     Best regards,
     Web Life Team. (Jk i am single, just me....)
     </pre>"""

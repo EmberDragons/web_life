@@ -25,9 +25,15 @@ var position_y=500;
 var speed_x = 4;
 var speed_y = 4;
 var controller = {"a" : false,
+                "q" : false,
                 "d" : false,
                 "w" : false,
-                "s" : false}; //for all inputs and keys
+                "z" : false,
+                "s" : false,
+                37 : false,
+                38 : false,
+                39 : false,
+                40 : false}; //for all inputs and keys
 
 var can_move=true;
 
@@ -191,10 +197,10 @@ window.addEventListener("beforeunload", (event) => {
 
 
 //input handler
-window.addEventListener("keydown", (event) => {
+window.addEventListener("onkeydown", (event) => {
     key_down_control(event);
 });
-window.addEventListener("keyup", (event) => {
+window.addEventListener("onkeyup", (event) => {
     key_up_control(event);
 });
 
@@ -809,13 +815,13 @@ function handleInput(){
             var value = controller[key];
             if (value==true) {
                 //we do smth
-                if (key == "a"){
+                if (key == "a" || key == "q"|| key == 37){
                     list[0] = speed_x;
-                }if (key == "d"){
+                }if (key == "d"|| key == 39){
                     list[1] = speed_x;
-                }if (key == "w"){
+                }if (key == "w" || key == "z"|| key == 38){
                     list[2] = speed_y;
-                }if (key == "s"){
+                }if (key == "s"|| key == 40){
                     list[3] = speed_y;
                 }
             }
@@ -1009,7 +1015,7 @@ function check_ping_inside_database() {
 function set_position_server() {
     if (canSetPosDB){
         if (mail){
-            webSocket.updatePos({mail: mail, server_id: server_id, pos_x: position_x, pos_y: position_y, name: name_pseudo, color: color});
+            webSocket.updatePos({mail: mail, server_id: server_id, pos_x: position_x, pos_y: position_y, name: name_pseudo, color: color, server_id:server_id});
         }
     }
 }
@@ -1040,7 +1046,6 @@ function add_multiplayer(mail_pers, name, color) {
         //the rest
         let infos_pers = {"name":name, "color":color, "target_pos_x" : 500, "target_pos_y" : 500, "pos_x":500, "pos_y":500, "time" : 0};
         dict_people_serv[mail_pers] = infos_pers;
-        console.log(dict_people_serv);
     }
 }
 
@@ -1140,7 +1145,7 @@ function addEmoji(nb) {
             showEmoji(code, Date.now(), false);
             //send to the server the emoji
             
-            webSocket.addEmoji({code : code, date:wait_next_date, pos_x:position_x, pos_y:position_y, is_img:false});
+            webSocket.addEmoji({code : code, date:wait_next_date, pos_x:position_x, pos_y:position_y, is_img:false, server_id:server_id});
         }
         else {
             if (imgName!=undefined){
@@ -1148,7 +1153,7 @@ function addEmoji(nb) {
                 var link = imgName;
                 showEmoji(link, Date.now(), true);
                 //send to the server the emoji
-                webSocket.addEmoji({code : link, date:wait_next_date, pos_x:position_x, pos_y:position_y, is_img:true});
+                webSocket.addEmoji({code : link, date:wait_next_date, pos_x:position_x, pos_y:position_y, is_img:true, server_id:server_id});
             }
         }
     }
@@ -1156,8 +1161,8 @@ function addEmoji(nb) {
 
 
 function getObjects() {
-    if (playing == true){
-        webSocket.getObjects().then(list => {
+    if (playing == true && server_id!=undefined){
+        webSocket.getObjects({server_id:server_id}).then(list => {
             if (list!=null) {
                 showObjects(list);
             }
@@ -1291,7 +1296,7 @@ function sendMessage(){
     else{
         showText(code, Date.now(), mail, true);
         //send to the server the emoji
-        webSocket.addText({code:code, date:Date.now(), player_mail:mail, player_name:name_pseudo});
+        webSocket.addText({code:code, date:Date.now(), player_mail:mail, player_name:name_pseudo, server_id:server_id});
     }
     document.getElementById("chat_bar").value="";
 }
