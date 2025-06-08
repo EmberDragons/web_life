@@ -61,9 +61,9 @@ def getAll():
     list_str=""
     for elt in OBJECT_LIST:
         if elt[0] == 1:
-            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+'|'
+            list_str+=str(elt[0])+"§"+str(elt[1])+"§"+str(elt[2])+"§"+str(elt[3])+"§"+str(elt[4])+'𩸽'
         else:
-            list_str+=str(elt[0])+","+str(elt[1])+","+str(elt[2])+","+str(elt[3])+","+str(elt[4])+","+str(elt[5])+'|'
+            list_str+=str(elt[0])+"§"+str(elt[1])+"§"+str(elt[2])+"§"+str(elt[3])+"§"+str(elt[4])+"§"+str(elt[5])+'𩸽'
 
     return list_str
 
@@ -744,8 +744,9 @@ def isOnline(mail):
     conn.close()
     return is_online
 
-@app.route('/getNBPeopleOnline', methods=['GET'])
+@app.route('/getNBPeopleOnline', methods=['POST'])
 def getNBPeopleOnline():
+    data = request.get_json()
     # Call your Python function here
     result = peopleOnline()
     return jsonify({'result': result})
@@ -763,8 +764,9 @@ def peopleOnline():
     conn.close()
     return nbr
 
-@app.route('/getNBPeople', methods=['GET'])
+@app.route('/getNBPeople', methods=['POST'])
 def getNBPeople():
+    data = request.get_json()
     # Call your Python function here
     result = people()
     return jsonify({'result': result})
