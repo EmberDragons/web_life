@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html name="play">
+    <link rel="stylesheet" href="../statics/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@3.1.3/dist/socket.io.min.js"></script>
+    <script type="module" src="../statics/script.js"> </script>
+    <title> Web Life - In Game </title> 
+    <header>
+        <div class="topnav">
+            <a class="active" href="index.html">Home</a>
+            <a href="about.html" class="active">About</a>
+            <a class="play_active" href="server_selection.html">Play</a>
+            <a class="split_log" onclick="openProfile()" id="profile"></a>
+        </div>
+    </header>
+    <body id = "Canvas"> 
+        <div id="player" class="player_main" style="z-index: 999;"> <img src="https://icons.hackclub.com/api/icons/grey/down-caret" alt="Hack Club" class="player_arrow"><button class="player_name" id="player_name" onclick="">Player</button><div class="player_graphics" id="player_graphics"></div></div>        
+    </body>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <div id="side_bar" class="side_bar">
+        <button class="side_emojis_button" onclick="addEmoji(1)"> <div id="1" class="text">&#128513;</div> </button> 
+        <button class="side_emojis_button" onclick="addEmoji(2)"> <div id="2" class="text">&#128525;</div> </button> 
+        <button class="side_emojis_button" onclick="addEmoji(3)"> <div id="3" class="text">&#128557;</div> </button> 
+        <button class="side_emojis_button" onclick="addEmoji(4)"> <div id="4" class="text">&#128514;</div> </button> 
+        <button class="side_emojis_button" onclick="addEmoji(5)"> <div id="5" class="text">&#128540;</div> </button> 
+        <button id="side_emojis_button_image" class="side_emojis_button_image" onclick="addEmoji(6)"> <img src="https://imgur.com/Tk5i9I7.png" class="image" id="image_to_swap"> </button>
+        <button id="side_emojis_button_swap" class="side_emojis_button_swap" onclick="selectImage()"><div class="text"> &#9851; </div> </button>
+        <p class="text_swap">select an image</p>
+        
+    </div>
+    <img src="https://icons.hackclub.com/api/icons/white/message" class="chat_img chat_img_pos">
+    <input id="chat_bar" class="chat_bar" type="text" placeholder="chat here...">
+    <button class="chat_send_button" onclick="sendMessage()">
+        <img src="https://icons.hackclub.com/api/icons/white/send" class="chat_img send_img_pos">
+    </button>
+    <div id="chat_log" class="chat"></div>
+    
+    <div id="emoji_manager">
+    <div id="text_manager">
+    </div>
+    <footer>
+        <div class="footer">
+            <center><p class="bottomnav" style = "font-size:82%"> &copy; Website made by <img src="https://icons.hackclub.com/api/icons/grey/github" alt="Hack Club" style="position: relative; left:15px; top:5px; width: 25px;"/> <a href="https://github.com/EmberDragons" target="_blank"> Eashy </a> for 2025 evenement Neighborhood in SF from 
+                <img src="https://icons.hackclub.com/api/icons/grey/web" alt="Hack Club" style="position: relative; left:15px; top:5px; width: 25px;"/> <a href="https://hackclub.com/" target="_blank"> Hack Club</a> </p> </center>
+        </div>
+    </footer>
+</html>
