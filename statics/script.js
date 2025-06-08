@@ -2,7 +2,7 @@ import { FRAMERATE, GameLoop } from './js/GameLoop.js';
 import { WebSocket } from './js/WebSocket.js';
 import { CodiFiePassword } from './js/Password.js';
 
-export const SERVER_ADRESS = 'https://1148-2a02-8428-37af-b01-c42c-6a19-5665-cf5d.ngrok-free.app';
+export const SERVER_ADRESS = 'https://a0be-2a02-8428-37af-b01-c42c-6a19-5665-cf5d.ngrok-free.app';
 
 var password_state = false;
 var max_server = 8;
@@ -30,10 +30,10 @@ var controller = {"a" : false,
                 "w" : false,
                 "z" : false,
                 "s" : false,
-                37 : false,
-                38 : false,
-                39 : false,
-                40 : false}; //for all inputs and keys
+                "ArrowLeft" : false,
+                "ArrowUp" : false,
+                "ArrowDown" : false,
+                "ArrowRight" : false}; //for all inputs and keys
 
 var can_move=true;
 
@@ -147,6 +147,21 @@ function retrieveInfos() {
     communicate_get();
 }
 
+function clearData(){
+    
+    name_pseudo=undefined;
+    mail=undefined;
+    password=undefined;
+    server_id=undefined;
+    color = "#FFFFFF";
+    banner_color = "#FFFFFF";
+    list_friends=undefined;
+    id_password=undefined;
+
+    position_x=500;
+    position_y=500;
+    online=false;
+}
 
 //update background color+caracter color too
 document.addEventListener("input", updateColor, false);
@@ -197,6 +212,12 @@ window.addEventListener("beforeunload", (event) => {
 
 
 //input handler
+window.addEventListener("keydown", (event) => {
+    key_down_control(event);
+});
+window.addEventListener("keyup", (event) => {
+    key_up_control(event);
+});
 window.addEventListener("onkeydown", (event) => {
     key_down_control(event);
 });
@@ -504,9 +525,17 @@ function GetProfile(mail) {
 }
 
 function logOut() {
-    document.cookie="id_password = ''; expires=Thu, 03 Aug 2008 12:00:00 UTC; path=/";
-    
-    open('login.html',"_self");
+    const url = SERVER_ADRESS + '/updateOnlineFalse';
+    const data = JSON.stringify({ id_password: id_password });
+    navigator.sendBeacon(url, data);
+
+    document.cookie = "id_password=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    clearData();
+
+    //short delay
+    setTimeout(() => {
+        open('login.html', "_self");
+    }, 500);
 }
 
 
@@ -815,13 +844,13 @@ function handleInput(){
             var value = controller[key];
             if (value==true) {
                 //we do smth
-                if (key == "a" || key == "q"|| key == 37){
+                if (key == "a" || key == "q"|| key == "ArrowLeft"){
                     list[0] = speed_x;
-                }if (key == "d"|| key == 39){
+                }if (key == "d"|| key == "ArrowRight"){
                     list[1] = speed_x;
-                }if (key == "w" || key == "z"|| key == 38){
+                }if (key == "w" || key == "z"|| key == "ArrowUp"){
                     list[2] = speed_y;
-                }if (key == "s"|| key == 40){
+                }if (key == "s"|| key == 40|| key == "ArrowDown"){
                     list[3] = speed_y;
                 }
             }
