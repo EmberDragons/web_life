@@ -1,4 +1,4 @@
-#This is the full project
+# This is the full project of Web Life
 
 <h2 align="center"><a href="https://web-life-client.vercel.app/templates/login.html">Web Life</a></h2>
 
