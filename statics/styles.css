@@ -1031,6 +1031,11 @@ body {
     color: grey;
 }
 
+footer {
+    position: sticky;
+    bottom: 10px;
+}
+
 html {
     background: url(img/background.svg) no-repeat center center; 
     background-size: cover;
