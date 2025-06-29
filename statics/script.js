@@ -2,7 +2,7 @@ import { FRAMERATE, GameLoop } from './js/GameLoop.js';
 import { WebSocket } from './js/WebSocket.js';
 import { CodiFiePassword } from './js/Password.js';
 
-export const SERVER_ADRESS = 'https://a0be-2a02-8428-37af-b01-c42c-6a19-5665-cf5d.ngrok-free.app';
+export const SERVER_ADRESS = 'https://silent-impala-16.telebit.io';
 
 var password_state = false;
 var max_server = 8;
