@@ -9,6 +9,8 @@
 <h3>Web Life was developped as a solo peoject during Hack Club's event <a href="https://neighborhood.hackclub.com"/> Neighborhood </a>
 The goal was to link people through the world while also allowing them to have fun in a completly open scource project </h3>
 <h4> It was also my first project in javascript and I learned a lot about it, I also learned how to set up a rasberry pi server</h4>
+<br>
+<img src="https://images.fillout.com/orgid-81/flowpublicid-2d6RsxRU3ius/widgetid-gHXJ/wLL8YM3u5TEHNwmmey7cHo/summer25.png?a=4hit9PajYRUKJJYwW78gvU">
 
 # 💪Features
 <h2>
