@@ -808,8 +808,7 @@ def Images(img):
     SERVER_IMG[name] = img
     return name
 
-
-
+#cool database
 def getDatabaseCodes():
     codes=[]
     conn = sqlite3.connect('databases/profile_database.db')
